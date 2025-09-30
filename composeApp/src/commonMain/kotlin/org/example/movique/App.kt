@@ -1,14 +1,12 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package org.example.movique
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -16,28 +14,21 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.twotone.Search
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter.Companion.tint
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -46,19 +37,10 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.example.movique.theme.MoviqueTheme
-import org.example.movique.ui.ThemeTestScreen
-
-@Serializable
-object HomeScreen
-
-@Serializable
-object SearchScreen
-
-@Serializable
-object FavoritesScreen
-
-@Serializable
-object ProfileScreen
+import org.example.movique.ui.FavoritesScreen
+import org.example.movique.ui.HomeScreen
+import org.example.movique.ui.ProfileScreen
+import org.example.movique.ui.SearchScreen
 
 @Composable
 @Preview
@@ -72,8 +54,6 @@ fun App() {
 			bottomBar = {
 				BottomAppBar(
 					modifier = Modifier.height(68.dp),
-					containerColor = MaterialTheme.colorScheme.surface,
-					contentColor = MaterialTheme.colorScheme.onSurface,
 					tonalElevation = 8.dp
 				) {
 					Row(
@@ -126,74 +106,12 @@ fun App() {
 			NavHost(
 				navController = navController,
 				startDestination = HomeScreen,
-				modifier = Modifier.padding(innerPadding)
 			) {
-				composable<HomeScreen> { HomeScreenContent() }
-				composable<SearchScreen> { SearchScreenContent() }
-				composable<FavoritesScreen> { FavoritesScreenContent() }
-				composable<ProfileScreen> { ProfileScreenContent() }
+				composable<HomeScreen> { HomeScreen(navController, innerPadding) }
+				composable<SearchScreen> { SearchScreen(navController, innerPadding) }
+				composable<FavoritesScreen> { FavoritesScreen(navController, innerPadding) }
+				composable<ProfileScreen> { ProfileScreen(navController, innerPadding) }
 			}
 		}
-	}
-}
-
-@Composable
-fun HomeScreenContent() {
-	Column(
-		modifier = Modifier.fillMaxSize(),
-		verticalArrangement = Arrangement.Center,
-		horizontalAlignment = Alignment.CenterHorizontally
-	) {
-		Text(
-			text = "Welcome to Movique",
-			style = MaterialTheme.typography.displayLarge, // PlayfairDisplay from moviqueTypography,
-			textAlign = TextAlign.Center,
-			color = MaterialTheme.colorScheme.onBackground
-		)
-	}
-}
-
-@Composable
-fun SearchScreenContent() {
-	Column(
-		modifier = Modifier.fillMaxSize(),
-		verticalArrangement = Arrangement.Center,
-		horizontalAlignment = Alignment.CenterHorizontally
-	) {
-		Text(
-			text = "Search Movies",
-			style = MaterialTheme.typography.headlineLarge,
-			color = MaterialTheme.colorScheme.onBackground
-		)
-	}
-}
-
-@Composable
-fun FavoritesScreenContent() {
-	Column(
-		modifier = Modifier.fillMaxSize(),
-		verticalArrangement = Arrangement.Center,
-		horizontalAlignment = Alignment.CenterHorizontally
-	) {
-		Text(
-			text = "Your Favorites",
-			style = MaterialTheme.typography.headlineLarge,
-			color = MaterialTheme.colorScheme.onBackground
-		)
-	}
-}
-
-@Composable
-fun ProfileScreenContent() {
-	Column(
-		modifier = Modifier.fillMaxSize(),
-		verticalArrangement = Arrangement.Center,
-		horizontalAlignment = Alignment.CenterHorizontally
-	) {
-		Text(
-			text = "User Profile",
-			style = MaterialTheme.typography.headlineLarge,
-			color = MaterialTheme.colorScheme.onBackground
-		)
 	}
 }
