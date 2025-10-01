@@ -45,6 +45,7 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 					contentAlignment = Alignment.BottomCenter
 				) {
 					CustomSearchBar(
+						modifier = Modifier.padding(horizontal = 4.dp),
 						query = query,
 						onQueryChange = { query = it },
 						placeholder = "Search movies..."
@@ -62,11 +63,7 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 			verticalArrangement = Arrangement.Center,
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
-			Text(
-				text = "Search Movies",
-				style = MaterialTheme.typography.headlineLarge,
-				color = MaterialTheme.colorScheme.onBackground
-			)
+
 		}
 	}
 }

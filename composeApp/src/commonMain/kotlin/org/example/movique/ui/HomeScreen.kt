@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,14 +22,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(navController: NavHostController, innerPadding: PaddingValues) {
+fun HomeScreen(
+	navController: NavHostController,
+	innerPadding: PaddingValues,
+	drawerState: DrawerState
+) {
+	val scope = rememberCoroutineScope()
+
 	Column(
 		modifier = Modifier.fillMaxSize()
 	) {
@@ -37,30 +46,36 @@ fun HomeScreen(navController: NavHostController, innerPadding: PaddingValues) {
 			title = {
 				Box(
 					modifier = Modifier
-						.fillMaxHeight()
-						.wrapContentWidth(),
-					contentAlignment = Alignment.Center // Vertically and horizontally center the content
+						.fillMaxHeight(),
+					contentAlignment = Alignment.Center
 				) {
 					Text(
 						text = "Movique",
-						style = MaterialTheme.typography.titleLarge, // Poppins from moviqueTypography
+						style = MaterialTheme.typography.titleLarge,
 						color = MaterialTheme.colorScheme.onSurface,
 						textAlign = TextAlign.Center
 					)
 				}
 			},
-			actions = {
-				IconButton(onClick = { /* TODO: Open drawer or menu */ }) {
-					Icon(
-						imageVector = Icons.Outlined.Menu,
-						contentDescription = "Menu",
-						tint = MaterialTheme.colorScheme.onSurface
-					)
+			navigationIcon = {
+				Box(
+					modifier = Modifier
+						.fillMaxHeight(),
+					contentAlignment = Alignment.Center
+				) {
+					IconButton(onClick = { scope.launch { drawerState.open() } }) {
+						Icon(
+							imageVector = Icons.Outlined.Menu,
+							contentDescription = "Menu",
+							tint = MaterialTheme.colorScheme.onSurface
+						)
+					}
 				}
 			},
 			colors = TopAppBarDefaults.topAppBarColors(
 				containerColor = MaterialTheme.colorScheme.surface,
 				titleContentColor = MaterialTheme.colorScheme.onSurface,
+				navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
 				actionIconContentColor = MaterialTheme.colorScheme.onSurface
 			)
 		)
@@ -71,12 +86,7 @@ fun HomeScreen(navController: NavHostController, innerPadding: PaddingValues) {
 			verticalArrangement = Arrangement.Center,
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
-			Text(
-				text = "Welcome to Movique",
-				style = MaterialTheme.typography.displayLarge, // PlayfairDisplay from moviqueTypography
-				textAlign = TextAlign.Center,
-				color = MaterialTheme.colorScheme.onBackground
-			)
+
 		}
 	}
 }

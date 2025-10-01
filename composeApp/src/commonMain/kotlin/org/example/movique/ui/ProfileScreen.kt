@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,24 +38,44 @@ fun ProfileScreen(navController: NavHostController, innerPadding: PaddingValues)
 			title = {
 				Box(
 					modifier = Modifier
-						.fillMaxHeight()
-						.wrapContentWidth(),
-					contentAlignment = Alignment.Center // Vertically and horizontally center the content
+						.fillMaxHeight(),
+					contentAlignment = Alignment.Center
 				) {
 					Text(
-						text = "User Profile",
+						text = "Profile",
 						style = MaterialTheme.typography.titleLarge,
 						color = MaterialTheme.colorScheme.onSurface
 					)
 				}
 			},
+			navigationIcon = {
+				Box(
+					modifier = Modifier
+						.fillMaxHeight(),
+					contentAlignment = Alignment.Center
+				) {
+					IconButton(onClick = { }) {
+						Icon(
+							imageVector = Icons.Default.Person,
+							contentDescription = "Profile",
+							tint = MaterialTheme.colorScheme.onSurface
+						)
+					}
+				}
+			},
 			actions = {
-				IconButton(onClick = { /* TODO: Open profile settings */ }) {
-					Icon(
-						imageVector = Icons.Outlined.Settings,
-						contentDescription = "Settings",
-						tint = MaterialTheme.colorScheme.onSurface
-					)
+				Box(
+					modifier = Modifier
+						.fillMaxHeight(),
+					contentAlignment = Alignment.Center
+				) {
+					IconButton(onClick = { /* TODO: Open profile settings */ }) {
+						Icon(
+							imageVector = Icons.Default.MoreVert,
+							contentDescription = "Settings",
+							tint = MaterialTheme.colorScheme.onSurface
+						)
+					}
 				}
 			},
 			colors = TopAppBarDefaults.topAppBarColors(
@@ -69,11 +91,7 @@ fun ProfileScreen(navController: NavHostController, innerPadding: PaddingValues)
 			verticalArrangement = Arrangement.Center,
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
-			Text(
-				text = "User Profile",
-				style = MaterialTheme.typography.headlineLarge,
-				color = MaterialTheme.colorScheme.onBackground
-			)
+
 		}
 	}
 }

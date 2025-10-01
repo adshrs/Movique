@@ -11,7 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -34,13 +40,29 @@ fun FavoritesScreen(navController: NavHostController, innerPadding: PaddingValue
 					modifier = Modifier
 						.fillMaxHeight()
 						.wrapContentWidth(),
-					contentAlignment = Alignment.Center // Vertically and horizontally center the content
+					contentAlignment = Alignment.Center
 				) {
 					Text(
-						text = "Your Favorites",
+						text = "Favorites",
 						style = MaterialTheme.typography.titleLarge,
 						color = MaterialTheme.colorScheme.onSurface
 					)
+				}
+			},
+			navigationIcon = {
+				Box(
+					modifier = Modifier
+						.fillMaxHeight()
+						.wrapContentWidth(),
+					contentAlignment = Alignment.Center
+				) {
+					IconButton(onClick = { }) {
+						Icon(
+							imageVector = Icons.Default.Favorite,
+							contentDescription = "Favorites",
+							tint = MaterialTheme.colorScheme.onSurface
+						)
+					}
 				}
 			},
 			colors = TopAppBarDefaults.topAppBarColors(
@@ -56,11 +78,7 @@ fun FavoritesScreen(navController: NavHostController, innerPadding: PaddingValue
 			verticalArrangement = Arrangement.Center,
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
-			Text(
-				text = "Your Favorites",
-				style = MaterialTheme.typography.headlineLarge,
-				color = MaterialTheme.colorScheme.onBackground
-			)
+
 		}
 	}
 }
