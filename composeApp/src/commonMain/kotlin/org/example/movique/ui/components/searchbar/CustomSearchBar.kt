@@ -87,6 +87,7 @@ fun CustomSearchBar(
 			textStyle = MaterialTheme.typography.bodyLarge.copy(
 				color = MaterialTheme.colorScheme.onSurface
 			),
+			singleLine = true,
 			cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
 			decorationBox = { innerTextField ->
 				if (query.text.isEmpty()) {
