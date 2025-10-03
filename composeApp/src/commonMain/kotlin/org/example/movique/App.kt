@@ -2,6 +2,8 @@
 
 package org.example.movique
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,11 +45,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,15 +68,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.example.movique.theme.MoviqueTheme
+import org.example.movique.theme.thememode.ThemeMode
+import org.example.movique.theme.thememode.ThemeRepository
 import org.example.movique.ui.FavoritesScreen
 import org.example.movique.ui.HomeScreen
 import org.example.movique.ui.ProfileScreen
 import org.example.movique.ui.SearchScreen
+import org.koin.compose.getKoin
+import org.koin.compose.koinInject
 
 @Composable
 @Preview
-fun App() {
-	MoviqueTheme {
+fun MoviqueApp() {
+	val repo: ThemeRepository = getKoin().get()// from Koin-Compose or getKoin().get()
+	val themeFlow = remember { repo.observeTheme() }
+	val theme by themeFlow.collectAsState(initial = ThemeMode.SYSTEM)
+
+	MoviqueTheme(theme) {
 		val navController = rememberNavController()
 		val currentBackStackEntry by navController.currentBackStackEntryAsState()
 		val currentRoute = currentBackStackEntry?.destination?.route
@@ -343,6 +357,58 @@ private fun MoviqueModalDrawerSheet(
 					.padding(top = 2.dp, bottom = 4.dp)
 					.height(48.dp)
 			)
+			ThemeSelector()
+		}
+	}
+}
+
+@Composable
+private fun ThemeSelector() {
+	val repo: ThemeRepository = koinInject()
+	val themeFlow = remember { repo.observeTheme() }
+	val currentTheme by themeFlow.collectAsState(initial = ThemeMode.SYSTEM)
+	val scope = rememberCoroutineScope()
+
+	Column(
+		modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 12.dp),
+		verticalArrangement = Arrangement.spacedBy(4.dp)
+	) {
+		Text(
+			text = "Theme",
+			style = MaterialTheme.typography.titleSmall,
+			color = MaterialTheme.colorScheme.primary
+		)
+
+		ThemeMode.entries.forEach { mode ->
+			Row(
+				verticalAlignment = Alignment.CenterVertically,
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(vertical = 2.dp)
+					.clickable(
+						indication = null,
+						interactionSource = remember { MutableInteractionSource() }
+					) {
+						scope.launch { repo.setTheme(mode) }
+					}
+			) {
+				RadioButton(
+					selected = currentTheme == mode,
+					onClick = { scope.launch { repo.setTheme(mode) } },
+					colors = RadioButtonDefaults.colors(
+						selectedColor = MaterialTheme.colorScheme.primary
+					)
+				)
+				Text(
+					text = when (mode) {
+						ThemeMode.LIGHT -> "Light"
+						ThemeMode.DARK -> "Dark"
+						ThemeMode.SYSTEM -> "System Default"
+					},
+					style = MaterialTheme.typography.bodyLarge,
+					modifier = Modifier.padding(start = 8.dp)
+				)
+			}
 		}
 	}
 }
