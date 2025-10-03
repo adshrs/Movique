@@ -13,3 +13,6 @@ object FavoritesScreen
 
 @Serializable
 object ProfileScreen
+
+@Serializable
+object SettingsScreen

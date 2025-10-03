@@ -2,6 +2,8 @@
 
 package org.example.movique
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -74,6 +76,7 @@ import org.example.movique.ui.FavoritesScreen
 import org.example.movique.ui.HomeScreen
 import org.example.movique.ui.ProfileScreen
 import org.example.movique.ui.SearchScreen
+import org.example.movique.ui.SettingsScreen
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 
@@ -92,75 +95,91 @@ fun MoviqueApp() {
 		val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 		val scope = rememberCoroutineScope()
 
-		ModalNavigationDrawer(
-			drawerState = drawerState,
-			gesturesEnabled = isHomeScreen, // Enable drawer gestures only on Home screen
-			drawerContent = {
-				MoviqueModalDrawerSheet(scope, drawerState, navController, currentRoute)
-			}
-		) {
-			Scaffold(
-				bottomBar = {
-					BottomAppBar(
-						modifier = Modifier.height(68.dp),
-						tonalElevation = 8.dp
-					) {
-						Row(
-							modifier = Modifier.fillMaxSize(),
-							horizontalArrangement = Arrangement.SpaceAround,
-							verticalAlignment = Alignment.CenterVertically
-						) {
-							val items = listOf(
-								HomeScreen to "Home",
-								SearchScreen to "Search",
-								FavoritesScreen to "Favorites",
-								ProfileScreen to "Profile"
-							)
+		MoviqueAppContent(drawerState, isHomeScreen, scope, navController, currentRoute)
+	}
+}
 
-							items.forEach { (screen, label) ->
-								val isSelected = currentRoute == screen::class.qualifiedName
-								Button(
-									onClick = {
-										navController.navigate(screen) {
-											popUpTo(navController.graph.startDestinationId) {
-												saveState = true
-											}
-											launchSingleTop = true
-											restoreState = true
+@Composable
+private fun MoviqueAppContent(
+	drawerState: DrawerState,
+	isHomeScreen: Boolean,
+	scope: CoroutineScope,
+	navController: NavHostController,
+	currentRoute: String?
+) {
+	ModalNavigationDrawer(
+		drawerState = drawerState,
+		gesturesEnabled = isHomeScreen, // Enable drawer gestures only on Home screen
+		drawerContent = {
+			MoviqueModalDrawerSheet(scope, drawerState, navController, currentRoute)
+		}
+	) {
+		Scaffold(
+			bottomBar = {
+				BottomAppBar(
+					modifier = Modifier.height(68.dp),
+					tonalElevation = 8.dp
+				) {
+					Row(
+						modifier = Modifier.fillMaxSize(),
+						horizontalArrangement = Arrangement.SpaceAround,
+						verticalAlignment = Alignment.CenterVertically
+					) {
+						val items = listOf(
+							HomeScreen to "Home",
+							SearchScreen to "Search",
+							FavoritesScreen to "Favorites",
+							ProfileScreen to "Profile"
+						)
+
+						items.forEach { (screen, label) ->
+							val isSelected = currentRoute == screen::class.qualifiedName
+							Button(
+								onClick = {
+									navController.navigate(screen) {
+										popUpTo(navController.graph.startDestinationId) {
+											saveState = true
 										}
+										launchSingleTop = true
+										restoreState = true
+									}
+								},
+								colors = ButtonDefaults.buttonColors(
+									containerColor = Color.Transparent
+								),
+								contentPadding = PaddingValues(8.dp)
+							) {
+								Icon(
+									imageVector = when (screen) {
+										HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
+										SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
+										FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
+										ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
+										else -> Icons.Default.Info // Fallback (not used)
 									},
-									colors = ButtonDefaults.buttonColors(
-										containerColor = Color.Transparent
-									),
-									contentPadding = PaddingValues(8.dp)
-								) {
-									Icon(
-										imageVector = when (screen) {
-											HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
-											SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
-											FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
-											ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
-											else -> Icons.Default.Info // Fallback (not used)
-										},
-										contentDescription = label,
-										modifier = Modifier.size(28.dp),
-										tint = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
-									)
-								}
+									contentDescription = label,
+									modifier = Modifier.size(28.dp),
+									tint = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+								)
 							}
 						}
 					}
 				}
-			) { innerPadding ->
-				NavHost(
-					navController = navController,
-					startDestination = HomeScreen,
-				) {
-					composable<HomeScreen> { HomeScreen(navController, innerPadding, drawerState) }
-					composable<SearchScreen> { SearchScreen(navController, innerPadding) }
-					composable<FavoritesScreen> { FavoritesScreen(navController, innerPadding) }
-					composable<ProfileScreen> { ProfileScreen(navController, innerPadding) }
-				}
+			}
+		) { innerPadding ->
+			NavHost(
+				navController = navController,
+				startDestination = HomeScreen,
+				enterTransition = { EnterTransition.None },
+				exitTransition = { ExitTransition.None },
+				popEnterTransition = { EnterTransition.None },
+				popExitTransition = { ExitTransition.None }
+			) {
+				composable<HomeScreen> { HomeScreen(navController, innerPadding, drawerState) }
+				composable<SearchScreen> { SearchScreen(navController, innerPadding) }
+				composable<FavoritesScreen> { FavoritesScreen(navController, innerPadding) }
+				composable<ProfileScreen> { ProfileScreen(navController, innerPadding) }
+				composable< SettingsScreen> { SettingsScreen(navController, innerPadding) }
 			}
 		}
 	}
@@ -350,6 +369,13 @@ private fun MoviqueModalDrawerSheet(
 				label = { Text("Settings", style = MaterialTheme.typography.titleMedium) },
 				selected = false,
 				onClick = {
+					navController.navigate(SettingsScreen) {
+						popUpTo(navController.graph.startDestinationId) {
+							saveState = true
+						}
+						launchSingleTop = true
+						restoreState = true
+					}
 					scope.launch { drawerState.close() }
 				},
 				modifier = Modifier
@@ -357,58 +383,6 @@ private fun MoviqueModalDrawerSheet(
 					.padding(top = 2.dp, bottom = 4.dp)
 					.height(48.dp)
 			)
-			ThemeSelector()
-		}
-	}
-}
-
-@Composable
-private fun ThemeSelector() {
-	val repo: ThemeRepository = koinInject()
-	val themeFlow = remember { repo.observeTheme() }
-	val currentTheme by themeFlow.collectAsState(initial = ThemeMode.SYSTEM)
-	val scope = rememberCoroutineScope()
-
-	Column(
-		modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 12.dp),
-		verticalArrangement = Arrangement.spacedBy(4.dp)
-	) {
-		Text(
-			text = "Theme",
-			style = MaterialTheme.typography.titleSmall,
-			color = MaterialTheme.colorScheme.primary
-		)
-
-		ThemeMode.entries.forEach { mode ->
-			Row(
-				verticalAlignment = Alignment.CenterVertically,
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(vertical = 2.dp)
-					.clickable(
-						indication = null,
-						interactionSource = remember { MutableInteractionSource() }
-					) {
-						scope.launch { repo.setTheme(mode) }
-					}
-			) {
-				RadioButton(
-					selected = currentTheme == mode,
-					onClick = { scope.launch { repo.setTheme(mode) } },
-					colors = RadioButtonDefaults.colors(
-						selectedColor = MaterialTheme.colorScheme.primary
-					)
-				)
-				Text(
-					text = when (mode) {
-						ThemeMode.LIGHT -> "Light"
-						ThemeMode.DARK -> "Dark"
-						ThemeMode.SYSTEM -> "System Default"
-					},
-					style = MaterialTheme.typography.bodyLarge,
-					modifier = Modifier.padding(start = 8.dp)
-				)
-			}
 		}
 	}
 }
