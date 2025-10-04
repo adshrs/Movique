@@ -1,9 +1,11 @@
 package org.example.movique.theme
 
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -16,20 +18,25 @@ fun MoviqueTheme(themeMode: ThemeMode, content: @Composable () -> Unit) {
 		ThemeMode.DARK  -> true
 		ThemeMode.SYSTEM -> isSystemInDarkTheme()
 	}
+	val colorScheme = if (isDarkTheme) moviqueDarkColorScheme() else moviqueLightColorScheme()
+	val extraColors = if (isDarkTheme) DarkExtraColors else LightExtraColors
+	val typography = moviqueTypography()
+
 	SetSystemBarsColor(
 		statusBarColor = colorScheme.primary,
 		navigationBarColor = colorScheme.background,
 		darkIcons = !isDarkTheme
 	)
 
-	val colorScheme = if (isDarkTheme) moviqueDarkColorScheme() else moviqueLightColorScheme()
-	val typography = moviqueTypography()
-
-	MaterialTheme(
-		colorScheme = colorScheme, // Material 3 / or colors for Material 2
-		typography = typography,
-		content = content
-	)
+	CompositionLocalProvider(
+		LocalExtraColors provides extraColors
+	) {
+		MaterialTheme(
+			colorScheme = colorScheme,
+			typography = typography,
+			content = content
+		)
+	}
 }
 
 @Composable

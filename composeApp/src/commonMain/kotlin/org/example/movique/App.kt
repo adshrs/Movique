@@ -4,19 +4,32 @@ package org.example.movique
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -36,6 +49,7 @@ import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerState
@@ -47,9 +61,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -59,6 +72,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -68,6 +82,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.example.movique.di.sharedModule
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.example.movique.theme.MoviqueTheme
 import org.example.movique.theme.thememode.ThemeMode
@@ -77,8 +92,9 @@ import org.example.movique.ui.HomeScreen
 import org.example.movique.ui.ProfileScreen
 import org.example.movique.ui.SearchScreen
 import org.example.movique.ui.SettingsScreen
+import org.example.movique.ui.SplashScreen
 import org.koin.compose.getKoin
-import org.koin.compose.koinInject
+import org.koin.core.context.startKoin
 
 @Composable
 @Preview
@@ -114,59 +130,64 @@ private fun MoviqueAppContent(
 			MoviqueModalDrawerSheet(scope, drawerState, navController, currentRoute)
 		}
 	) {
-		Scaffold(
-			bottomBar = {
-				BottomAppBar(
-					modifier = Modifier.height(68.dp),
-					tonalElevation = 8.dp
-				) {
-					Row(
-						modifier = Modifier.fillMaxSize(),
-						horizontalArrangement = Arrangement.SpaceAround,
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						val items = listOf(
-							HomeScreen to "Home",
-							SearchScreen to "Search",
-							FavoritesScreen to "Favorites",
-							ProfileScreen to "Profile"
-						)
-
-						items.forEach { (screen, label) ->
-							val isSelected = currentRoute == screen::class.qualifiedName
-							Button(
-								onClick = {
-									navController.navigate(screen) {
-										popUpTo(navController.graph.startDestinationId) {
-											saveState = true
-										}
-										launchSingleTop = true
-										restoreState = true
-									}
-								},
-								colors = ButtonDefaults.buttonColors(
-									containerColor = Color.Transparent
-								),
-								contentPadding = PaddingValues(8.dp)
-							) {
-								Icon(
-									imageVector = when (screen) {
-										HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
-										SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
-										FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
-										ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
-										else -> Icons.Default.Info // Fallback (not used)
-									},
-									contentDescription = label,
-									modifier = Modifier.size(28.dp),
-									tint = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
-								)
-							}
-						}
-					}
-				}
-			}
-		) { innerPadding ->
+//		Scaffold(
+//			modifier = Modifier.navigationBarsPadding(),
+//			bottomBar = {
+//				BottomAppBar(
+//					modifier = Modifier
+//						.height(52.dp),
+//					tonalElevation = 8.dp
+//				) {
+//					Row(
+//						modifier = Modifier.fillMaxSize(),
+//						horizontalArrangement = Arrangement.SpaceAround,
+//						verticalAlignment = Alignment.CenterVertically
+//					) {
+//						val items = listOf(
+//							HomeScreen to "Home",
+//							SearchScreen to "Search",
+//							FavoritesScreen to "Favorites",
+//							ProfileScreen to "Profile"
+//						)
+//
+//						items.forEach { (screen, label) ->
+//							val isSelected = currentRoute == screen::class.qualifiedName
+//							Button(
+//								onClick = {
+//									navController.navigate(screen) {
+//										popUpTo(navController.graph.startDestinationId) {
+//											saveState = true
+//										}
+//										launchSingleTop = true
+//										restoreState = true
+//									}
+//								},
+//								colors = ButtonDefaults.buttonColors(
+//									containerColor = Color.Transparent
+//								),
+//								contentPadding = PaddingValues(0.dp)
+//							) {
+//								Icon(
+//									imageVector = when (screen) {
+//										HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
+//										SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
+//										FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
+//										ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
+//										else -> Icons.Default.Info // Fallback (not used)
+//									},
+//									contentDescription = label,
+//									modifier = Modifier.size(28.dp),
+//									tint = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+//								)
+//							}
+//						}
+//					}
+//				}
+//			}
+//		) { innerPadding ->
+		Box(
+			modifier = Modifier.fillMaxSize()
+		) {
 			NavHost(
 				navController = navController,
 				startDestination = HomeScreen,
@@ -175,13 +196,83 @@ private fun MoviqueAppContent(
 				popEnterTransition = { EnterTransition.None },
 				popExitTransition = { ExitTransition.None }
 			) {
-				composable<HomeScreen> { HomeScreen(navController, innerPadding, drawerState) }
-				composable<SearchScreen> { SearchScreen(navController, innerPadding) }
-				composable<FavoritesScreen> { FavoritesScreen(navController, innerPadding) }
-				composable<ProfileScreen> { ProfileScreen(navController, innerPadding) }
-				composable< SettingsScreen> { SettingsScreen(navController, innerPadding) }
+				composable<SplashScreen> { SplashScreen(navController) }
+				composable<HomeScreen> { HomeScreen(navController, PaddingValues(), drawerState) }
+				composable<SearchScreen> { SearchScreen(navController, PaddingValues()) }
+				composable<FavoritesScreen> { FavoritesScreen(navController, PaddingValues()) }
+				composable<ProfileScreen> { ProfileScreen(navController, PaddingValues()) }
+				composable<SettingsScreen> { SettingsScreen(navController, PaddingValues()) }
+			}
+			Box(
+				modifier = Modifier
+					.align(Alignment.BottomCenter)
+					.background(
+						Brush.verticalGradient(
+							colors = listOf(
+								BottomAppBarDefaults.containerColor.copy(0.7f),
+								BottomAppBarDefaults.containerColor
+							)
+						)
+					)
+			) {
+				Box(
+					modifier = Modifier.navigationBarsPadding()
+				) {
+					BottomAppBar(
+						modifier = Modifier
+							.height(52.dp),
+						tonalElevation = 8.dp,
+						containerColor = Color.Transparent
+					) {
+						Row(
+							modifier = Modifier.fillMaxSize(),
+							horizontalArrangement = Arrangement.SpaceAround,
+							verticalAlignment = Alignment.CenterVertically
+						) {
+							val items = listOf(
+								HomeScreen to "Home",
+								SearchScreen to "Search",
+								FavoritesScreen to "Favorites",
+								ProfileScreen to "Profile"
+							)
+
+							items.forEach { (screen, label) ->
+								val isSelected = currentRoute == screen::class.qualifiedName
+								Button(
+									onClick = {
+										navController.navigate(screen) {
+											popUpTo(navController.graph.startDestinationId) {
+												saveState = true
+											}
+											launchSingleTop = true
+											restoreState = true
+										}
+									},
+									colors = ButtonDefaults.buttonColors(
+										containerColor = Color.Transparent
+									),
+									contentPadding = PaddingValues(0.dp)
+								) {
+									Icon(
+										imageVector = when (screen) {
+											HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
+											SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
+											FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
+											ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
+											else -> Icons.Default.Info // Fallback (not used)
+										},
+										contentDescription = label,
+										modifier = Modifier.size(28.dp),
+										tint = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+									)
+								}
+							}
+						}
+					}
+				}
 			}
 		}
+//		}
 	}
 }
 
@@ -194,7 +285,7 @@ private fun MoviqueModalDrawerSheet(
 	currentRoute: String?
 ) {
 	ModalDrawerSheet(
-		modifier = Modifier.width(300.dp)
+		modifier = Modifier.width(IntrinsicSize.Max)
 	) {
 		Column(
 			modifier = Modifier
@@ -205,7 +296,6 @@ private fun MoviqueModalDrawerSheet(
 			// Drawer Header
 			Row(
 				modifier = Modifier
-					.fillMaxWidth()
 					.padding(top = 4.dp, bottom = 8.dp)
 					.padding(horizontal = 12.dp),
 				verticalAlignment = Alignment.CenterVertically,
@@ -379,7 +469,7 @@ private fun MoviqueModalDrawerSheet(
 					scope.launch { drawerState.close() }
 				},
 				modifier = Modifier
-					.padding(horizontal = 8.dp,)
+					.padding(horizontal = 8.dp)
 					.padding(top = 2.dp, bottom = 4.dp)
 					.height(48.dp)
 			)

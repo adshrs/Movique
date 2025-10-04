@@ -3,6 +3,9 @@ package org.example.movique
 import kotlinx.serialization.Serializable
 
 @Serializable
+object SplashScreen
+
+@Serializable
 object HomeScreen
 
 @Serializable

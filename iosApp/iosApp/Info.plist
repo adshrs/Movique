@@ -4,5 +4,7 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>TMDB_API_KEY</key>
+    <string>ada8815f06fe7dce337c296b72bb0bbe</string>
 </dict>
 </plist>
