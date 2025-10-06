@@ -336,7 +336,7 @@ fun HomeScreen(
 					Brush.verticalGradient(
 						colors = listOf(
 							BottomAppBarDefaults.containerColor,
-							BottomAppBarDefaults.containerColor.copy(0.9f)
+							BottomAppBarDefaults.containerColor.copy(0.8f)
 						)
 					)
 				),

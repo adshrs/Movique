@@ -1,6 +1,5 @@
 package org.example.movique.ui.components.searchbar
 
-import androidx.compose.foundation.BasicTooltipDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -24,18 +25,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomSearchBar(
-	query: TextFieldValue,
-	onQueryChange: (TextFieldValue) -> Unit,
+	query: String,
+	onQueryChange: (String) -> Unit,
+	onSearch: (String) -> Unit,
 	placeholder: String,
 	modifier: Modifier = Modifier
 ) {
@@ -89,8 +90,10 @@ fun CustomSearchBar(
 			),
 			singleLine = true,
 			cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+			keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+			keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
 			decorationBox = { innerTextField ->
-				if (query.text.isEmpty()) {
+				if (query.isEmpty()) {
 					Text(
 						text = placeholder,
 						style = MaterialTheme.typography.bodyLarge,

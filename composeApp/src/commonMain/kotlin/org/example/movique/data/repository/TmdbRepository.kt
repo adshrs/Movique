@@ -1,6 +1,7 @@
 package org.example.movique.data.repository
 
 import org.example.movique.data.models.MovieResponseModel
+import org.example.movique.data.models.MultiSearchResponseModel
 import org.example.movique.networking.TmdbClient
 import org.example.movique.util.NetworkError
 import org.example.movique.util.Result
@@ -12,11 +13,19 @@ class TmdbRepository(
 		return client.getPopularMovies(page)
 	}
 
+	suspend fun multiSearch(query: String, page: Int = 1): Result<MultiSearchResponseModel, NetworkError> {
+		return try {
+			client.multiSearch(query, page)
+		} catch (e: IllegalArgumentException) {
+			Result.Error(NetworkError.UNKNOWN)
+		}
+	}
+
 	suspend fun searchMovies(query: String, page: Int = 1): Result<MovieResponseModel, NetworkError> {
 		return try {
 			client.searchMovies(query, page)
 		} catch (e: IllegalArgumentException) {
-			Result.Error(NetworkError.UNKNOWN) // Handle blank query
+			Result.Error(NetworkError.UNKNOWN)
 		}
 	}
 }
