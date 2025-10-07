@@ -10,6 +10,7 @@ import org.example.movique.data.models.MultiSearchResponseModel
 import org.example.movique.data.repository.TmdbRepository
 import org.example.movique.util.NetworkError
 import org.example.movique.util.Result
+import org.example.movique.util.map
 import org.example.movique.util.mapSuccess
 
 class SearchViewModel(
@@ -44,7 +45,6 @@ class SearchViewModel(
 				currentPage = 1
 				currentQuery = query
 			} else if (query != currentQuery) {
-				// If query changes during pagination, reset
 				_isLoading.value = true
 				_getMultiSearchResults.value = Result.Loading
 				_searchResults.value = emptyList()
@@ -52,7 +52,7 @@ class SearchViewModel(
 				currentQuery = query
 			}
 			val result = tmdbRepository.multiSearch(query, currentPage)
-			_getMultiSearchResults.value = result.mapSuccess { response ->
+			_getMultiSearchResults.value = result.map { response ->
 				response.copy(
 					results = response.results
 						.filter { it.mediaType == "movie" || it.mediaType == "tv" }
@@ -71,5 +71,14 @@ class SearchViewModel(
 			}
 			_isLoading.value = false
 		}
+	}
+
+	fun resetSearch() {
+		_searchResults.value = emptyList()
+		_getMultiSearchResults.value = null
+		currentPage = 1
+		currentQuery = ""
+		totalPages = Int.MAX_VALUE
+		_isLoading.value = false
 	}
 }

@@ -25,18 +25,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerState
@@ -49,7 +45,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -58,12 +53,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorProducer
-import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -76,16 +68,10 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Precision
 import kotlinx.coroutines.launch
-import kotlinx.serialization.builtins.ArraySerializer
-import movique.composeapp.generated.resources.Res
-import movique.composeapp.generated.resources.compose_multiplatform
-import movique.composeapp.generated.resources.ic_theme
-import org.example.movique.data.models.MovieResponseModel
 import org.example.movique.theme.extraColors
 import org.example.movique.util.Result
 import org.example.movique.util.tools.Constants.NA
 import org.example.movique.viewmodel.HomeViewModel
-import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.round
 
@@ -99,10 +85,13 @@ fun HomeScreen(
 	val homeViewModel = koinViewModel<HomeViewModel>()
 	val getPopularMovies = homeViewModel.getPopularMovies.collectAsState()
 	val popularMovies = (getPopularMovies.value as? Result.Success)?.data?.results ?: emptyList()
+	val getPopularTvShows = homeViewModel.getPopularTvShows.collectAsState()
+	val popularTvShows = (getPopularTvShows.value as? Result.Success)?.data?.results ?: emptyList()
 	val isLoading by homeViewModel.isLoading.collectAsState()
 
 	LaunchedEffect(Unit) {
 		homeViewModel.fetchPopularMovies()
+		homeViewModel.fetchPopularTvShows()
 	}
 
 	Box(
@@ -114,9 +103,10 @@ fun HomeScreen(
 				modifier = Modifier.fillMaxSize()
 			) {
 				item { Spacer(modifier = Modifier.height(96.dp)) }
+				// Popular Movies Section
 				item {
 					Column(
-						modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+						modifier = Modifier.fillMaxWidth().padding(bottom = 28.dp),
 						verticalArrangement = Arrangement.spacedBy(16.dp)
 					) {
 						Row(
@@ -134,7 +124,7 @@ fun HomeScreen(
 							Spacer(modifier = Modifier.width(8.dp))
 							Text(
 								modifier = Modifier.fillMaxWidth().weight(1f),
-								text = "Popular Movies",
+								text = "Popular - Movies",
 								style = MaterialTheme.typography.titleMedium,
 								fontWeight = FontWeight.Bold,
 								color = MaterialTheme.colorScheme.onSurface
@@ -174,7 +164,13 @@ fun HomeScreen(
 							) {
 								item { Spacer(modifier = Modifier.width(16.dp)) }
 								items(popularMovies.size) { index ->
-									MovieCard(movie = popularMovies[index])
+									MediaCard(
+										mediaType = "movie",
+										posterPath = popularMovies[index].posterPath,
+										title = popularMovies[index].title,
+										voteAverage = popularMovies[index].voteAverage,
+										releaseDate = popularMovies[index].releaseDate
+									)
 									if (index < popularMovies.size - 1) {
 										Spacer(modifier = Modifier.width(8.dp))
 									}
@@ -184,9 +180,10 @@ fun HomeScreen(
 						}
 					}
 				}
+				// Popular Tv Series Section
 				item {
 					Column(
-						modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+						modifier = Modifier.fillMaxWidth().padding(bottom = 28.dp),
 						verticalArrangement = Arrangement.spacedBy(16.dp)
 					) {
 						Row(
@@ -204,7 +201,7 @@ fun HomeScreen(
 							Spacer(modifier = Modifier.width(8.dp))
 							Text(
 								modifier = Modifier.fillMaxWidth().weight(1f),
-								text = "Popular Movies",
+								text = "Popular - TV Shows",
 								style = MaterialTheme.typography.titleMedium,
 								fontWeight = FontWeight.Bold,
 								color = MaterialTheme.colorScheme.onSurface
@@ -236,16 +233,22 @@ fun HomeScreen(
 								}
 							}
 						}
-						if (isLoading || popularMovies.isEmpty()) {
+						if (isLoading || popularTvShows.isEmpty()) {
 							ShimmerLoadingRow()
 						} else {
 							LazyRow(
 								modifier = Modifier.fillMaxSize(),
 							) {
 								item { Spacer(modifier = Modifier.width(16.dp)) }
-								items(popularMovies.size) { index ->
-									MovieCard(movie = popularMovies[index])
-									if (index < popularMovies.size - 1) {
+								items(popularTvShows.size) { index ->
+									MediaCard(
+										mediaType = "tv",
+										posterPath = popularTvShows[index].posterPath,
+										title = popularTvShows[index].name,
+										voteAverage = popularTvShows[index].voteAverage,
+										releaseDate = popularTvShows[index].firstAirDate
+									)
+									if (index < popularTvShows.size - 1) {
 										Spacer(modifier = Modifier.width(8.dp))
 									}
 								}
@@ -274,7 +277,7 @@ fun HomeScreen(
 							Spacer(modifier = Modifier.width(8.dp))
 							Text(
 								modifier = Modifier.fillMaxWidth().weight(1f),
-								text = "Popular Movies",
+								text = "Popular - Movies",
 								style = MaterialTheme.typography.titleMedium,
 								fontWeight = FontWeight.Bold,
 								color = MaterialTheme.colorScheme.onSurface
@@ -314,7 +317,13 @@ fun HomeScreen(
 							) {
 								item { Spacer(modifier = Modifier.width(16.dp)) }
 								items(popularMovies.size) { index ->
-									MovieCard(movie = popularMovies[index])
+									MediaCard(
+										mediaType = "movie",
+										posterPath = popularMovies[index].posterPath,
+										title = popularMovies[index].title,
+										voteAverage = popularMovies[index].voteAverage,
+										releaseDate = popularMovies[index].releaseDate
+									)
 									if (index < popularMovies.size - 1) {
 										Spacer(modifier = Modifier.width(8.dp))
 									}
@@ -380,7 +389,13 @@ fun HomeScreen(
 }
 
 @Composable
-fun MovieCard(movie: MovieResponseModel.Movie) {
+fun MediaCard(
+	mediaType: String,
+	posterPath: String?,
+	title: String?,
+	voteAverage: Double?,
+	releaseDate: String?
+) {
 	OutlinedCard(
 		modifier = Modifier.width(120.dp),
 		colors = CardDefaults.cardColors(
@@ -402,11 +417,11 @@ fun MovieCard(movie: MovieResponseModel.Movie) {
 			) {
 				AsyncImage(
 					model = ImageRequest.Builder(LocalPlatformContext.current)
-						.data("https://image.tmdb.org/t/p/w500${movie.posterPath}")
+						.data("https://image.tmdb.org/t/p/w500${posterPath}")
 						.crossfade(true)
 						.precision(Precision.INEXACT)
 						.build(),
-					contentDescription = movie.title,
+					contentDescription = title,
 					modifier = Modifier
 						.fillMaxSize(),
 					contentScale = ContentScale.Crop,
@@ -420,7 +435,7 @@ fun MovieCard(movie: MovieResponseModel.Movie) {
 				verticalArrangement = Arrangement.spacedBy(10.dp)
 			) {
 				Text(
-					text = movie.title ?: "No Title",
+					text = title ?: "No Title",
 					style = MaterialTheme.typography.titleSmall,
 					color = MaterialTheme.colorScheme.onSurface,
 					minLines = 2,
@@ -441,11 +456,11 @@ fun MovieCard(movie: MovieResponseModel.Movie) {
 					Spacer(modifier = Modifier.width(4.dp))
 					Text(
 						modifier = Modifier.weight(1f),
-						text = if (movie.voteAverage != null) "${round(movie.voteAverage * 10) / 10}" else NA,
+						text = if (voteAverage != null) "${round(voteAverage * 10) / 10}" else NA,
 						style = MaterialTheme.typography.labelMedium
 					)
 					Text(
-						text = movie.releaseDate?.take(4) ?: NA,
+						text = releaseDate?.take(4) ?: NA,
 						style = MaterialTheme.typography.labelMedium,
 						color = MaterialTheme.colorScheme.onSurfaceVariant
 					)

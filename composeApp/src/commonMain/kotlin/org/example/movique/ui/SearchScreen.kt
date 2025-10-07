@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -86,14 +87,26 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 	val listState = rememberLazyListState()
 	val snackbarHostState = remember { SnackbarHostState() }
 	var query by remember { mutableStateOf("") }
+	var isInitialized by remember { mutableStateOf(false) }
 
-	// Live search: Trigger search as user types with debounce
+	// Reset search state when screen is first composed or recomposed after navigation
+	LaunchedEffect(Unit) {
+		query = ""
+		searchViewModel.resetSearch()
+		isInitialized = true
+	}
+
+	// Live search: Trigger search only for non-empty queries with debounce
 	LaunchedEffect(query) {
 		snapshotFlow { query }
-			.debounce(300L) // Wait 300ms after typing stops
-			.distinctUntilChanged() // Only trigger on actual changes
+			.debounce(300L)
+			.distinctUntilChanged()
 			.collect { searchQuery ->
-				searchViewModel.fetchMultiSearchResults(searchQuery)
+				if (searchQuery.isNotBlank()) {
+					searchViewModel.fetchMultiSearchResults(searchQuery)
+				} else {
+					searchViewModel.resetSearch()
+				}
 			}
 	}
 
@@ -103,7 +116,7 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 			.debounce(300L)
 			.collect { visibleItems ->
 				val lastVisibleItem = visibleItems.lastOrNull()?.index
-				if (lastVisibleItem != null && lastVisibleItem >= searchResults.size - 2 && !isLoading) {
+				if (lastVisibleItem != null && lastVisibleItem >= searchResults.size - 2 && !isLoading && query.isNotBlank()) {
 					searchViewModel.fetchMultiSearchResults(query, append = true)
 				}
 			}
@@ -118,15 +131,34 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 				state = listState,
 				modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
 			) {
-				item { Spacer(modifier = Modifier.height(112.dp)) }
+				item { Spacer(modifier = Modifier.height(100.dp)) }
 				when {
-					state?.isLoading == true && searchResults.isEmpty() -> {
+					!isInitialized -> {
+						// Show nothing until initialized to avoid flicker
+						item { Spacer(modifier = Modifier.height(0.dp)) }
+					}
+					query.isBlank() && searchResults.isEmpty() -> {
 						item {
-							CircularProgressIndicator(
+							Text(
+								text = "Your search results will appear here.",
 								modifier = Modifier
 									.fillMaxSize()
-									.wrapContentSize(Alignment.Center)
+									.wrapContentSize(Alignment.Center),
+								style = MaterialTheme.typography.labelMedium,
+								textAlign = TextAlign.Center,
+								color = MaterialTheme.colorScheme.onSurfaceVariant
 							)
+						}
+					}
+					state?.isLoading == true && searchResults.isEmpty() -> {
+						item {
+							Box(modifier = Modifier.fillMaxSize()) {
+								CircularProgressIndicator(
+									modifier = Modifier
+										.size(20.dp)
+										.align(Alignment.TopCenter)
+								)
+							}
 						}
 					}
 					state?.isError == true -> {
@@ -157,26 +189,24 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 						items(searchResults.size) { index ->
 							MultiResultCard(result = searchResults[index])
 						}
-						if (isLoading && searchResults.isNotEmpty()) {
+						if (isLoading || state?.isLoading == true) {
 							item {
-								CircularProgressIndicator(
+								Column(
 									modifier = Modifier
 										.fillMaxWidth()
-										.padding(16.dp)
-										.wrapContentSize(Alignment.Center)
-								)
+										.height(80.dp),
+									horizontalAlignment = Alignment.CenterHorizontally
+								) {
+									CircularProgressIndicator(
+										modifier = Modifier
+											.size(20.dp)
+									)
+								}
 							}
-						}
-					}
-					else -> {
-						item {
-							Text(
-								text = "Enter a search query",
-								modifier = Modifier
-									.fillMaxSize()
-									.wrapContentSize(Alignment.Center),
-								style = MaterialTheme.typography.bodyLarge
-							)
+						} else {
+							item {
+								Spacer(modifier = Modifier.height(80.dp))
+							}
 						}
 					}
 				}
