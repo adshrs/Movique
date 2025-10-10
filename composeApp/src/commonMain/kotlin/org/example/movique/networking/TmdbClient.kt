@@ -109,6 +109,34 @@ class TmdbClient(
 		}
 	}
 
+	suspend fun getTrending(mediaType: String, timeWindow: String, page: Int): Result<MultiSearchResponseModel, NetworkError> {
+		val response = try {
+			httpClient.get("${baseUrl}trending/$mediaType/$timeWindow") {
+				parameter("api_key", apiKey)
+				parameter("page", page)
+			}
+		} catch (e: UnresolvedAddressException) {
+			return Result.Error(NetworkError.NO_INTERNET)
+		} catch (e: SerializationException) {
+			return Result.Error(NetworkError.SERIALIZATION)
+		} catch (e: Exception) {
+			return Result.Error(NetworkError.UNKNOWN)
+		}
+
+		return when (response.status.value) {
+			in 200..299 -> {
+				val data = response.body<MultiSearchResponseModel>()
+				Result.Success(data)
+			}
+			401 -> Result.Error(NetworkError.UNAUTHORIZED)
+			409 -> Result.Error(NetworkError.CONFLICT)
+			408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
+			413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
+			in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
+			else -> Result.Error(NetworkError.UNKNOWN)
+		}
+	}
+
 	suspend fun getPopularTvShows(page: Int): Result<TvSeriesResponseModel, NetworkError> {
 		val response = try {
 			httpClient.get("${baseUrl}tv/popular") {

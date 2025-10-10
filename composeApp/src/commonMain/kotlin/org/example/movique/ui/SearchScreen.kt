@@ -66,14 +66,12 @@ import coil3.size.Precision
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import movique.composeapp.generated.resources.Res
 import org.example.movique.data.models.MultiSearchResponseModel
 import org.example.movique.theme.extraColors
 import org.example.movique.ui.components.searchbar.CustomSearchBar
 import org.example.movique.util.Result
 import org.example.movique.util.tools.Constants.NA
 import org.example.movique.viewmodel.SearchViewModel
-import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.round
 
@@ -187,7 +185,7 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 					}
 					state?.isSuccess == true || searchResults.isNotEmpty() -> {
 						items(searchResults.size) { index ->
-							MultiResultCard(result = searchResults[index])
+							MultiSearchResultCard(result = searchResults[index])
 						}
 						if (isLoading || state?.isLoading == true) {
 							item {
@@ -250,7 +248,7 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 }
 
 @Composable
-fun MultiResultCard(result: MultiSearchResponseModel.MultiResult) {
+fun MultiSearchResultCard(result: MultiSearchResponseModel.MultiResult) {
 	OutlinedCard(
 		modifier = Modifier
 			.fillMaxWidth()
@@ -337,8 +335,12 @@ fun MultiResultCard(result: MultiSearchResponseModel.MultiResult) {
 					Spacer(modifier = Modifier.weight(1f))
 					Badge(
 						modifier = Modifier,
-						containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-						contentColor = MaterialTheme.colorScheme.primary
+						containerColor =
+							if (result.mediaType == "movie") MaterialTheme.colorScheme.primaryContainer.copy(0.8f)
+							else MaterialTheme.colorScheme.tertiaryContainer.copy(0.8f),
+						contentColor =
+							if (result.mediaType == "movie") MaterialTheme.colorScheme.primary
+							else MaterialTheme.colorScheme.tertiary
 					) {
 						Text(
 							text = when (result.mediaType) {

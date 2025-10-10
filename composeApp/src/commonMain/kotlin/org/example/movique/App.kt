@@ -80,6 +80,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.example.movique.di.sharedModule
@@ -89,6 +90,7 @@ import org.example.movique.theme.thememode.ThemeMode
 import org.example.movique.theme.thememode.ThemeRepository
 import org.example.movique.ui.FavoritesScreen
 import org.example.movique.ui.HomeScreen
+import org.example.movique.ui.MediaListScreen
 import org.example.movique.ui.ProfileScreen
 import org.example.movique.ui.SearchScreen
 import org.example.movique.ui.SettingsScreen
@@ -108,6 +110,7 @@ fun MoviqueApp() {
 		val currentBackStackEntry by navController.currentBackStackEntryAsState()
 		val currentRoute = currentBackStackEntry?.destination?.route
 		val isHomeScreen = currentRoute == HomeScreen::class.qualifiedName
+		val showBottomBar = currentRoute != MediaListScreen::class.qualifiedName
 		val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 		val scope = rememberCoroutineScope()
 
@@ -123,6 +126,7 @@ private fun MoviqueAppContent(
 	navController: NavHostController,
 	currentRoute: String?
 ) {
+
 	ModalNavigationDrawer(
 		drawerState = drawerState,
 		gesturesEnabled = isHomeScreen, // Enable drawer gestures only on Home screen
@@ -130,61 +134,6 @@ private fun MoviqueAppContent(
 			MoviqueModalDrawerSheet(scope, drawerState, navController, currentRoute)
 		}
 	) {
-//		Scaffold(
-//			modifier = Modifier.navigationBarsPadding(),
-//			bottomBar = {
-//				BottomAppBar(
-//					modifier = Modifier
-//						.height(52.dp),
-//					tonalElevation = 8.dp
-//				) {
-//					Row(
-//						modifier = Modifier.fillMaxSize(),
-//						horizontalArrangement = Arrangement.SpaceAround,
-//						verticalAlignment = Alignment.CenterVertically
-//					) {
-//						val items = listOf(
-//							HomeScreen to "Home",
-//							SearchScreen to "Search",
-//							FavoritesScreen to "Favorites",
-//							ProfileScreen to "Profile"
-//						)
-//
-//						items.forEach { (screen, label) ->
-//							val isSelected = currentRoute == screen::class.qualifiedName
-//							Button(
-//								onClick = {
-//									navController.navigate(screen) {
-//										popUpTo(navController.graph.startDestinationId) {
-//											saveState = true
-//										}
-//										launchSingleTop = true
-//										restoreState = true
-//									}
-//								},
-//								colors = ButtonDefaults.buttonColors(
-//									containerColor = Color.Transparent
-//								),
-//								contentPadding = PaddingValues(0.dp)
-//							) {
-//								Icon(
-//									imageVector = when (screen) {
-//										HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
-//										SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
-//										FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
-//										ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
-//										else -> Icons.Default.Info // Fallback (not used)
-//									},
-//									contentDescription = label,
-//									modifier = Modifier.size(28.dp),
-//									tint = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
-//								)
-//							}
-//						}
-//					}
-//				}
-//			}
-//		) { innerPadding ->
 		Box(
 			modifier = Modifier.fillMaxSize()
 		) {
@@ -196,6 +145,10 @@ private fun MoviqueAppContent(
 				popEnterTransition = { EnterTransition.None },
 				popExitTransition = { ExitTransition.None }
 			) {
+				composable<MediaListScreen> {
+					val args = it.toRoute<MediaListScreen>()
+					MediaListScreen(navController, args.category)
+				}
 				composable<SplashScreen> { SplashScreen(navController) }
 				composable<HomeScreen> { HomeScreen(navController, PaddingValues(), drawerState) }
 				composable<SearchScreen> { SearchScreen(navController, PaddingValues()) }

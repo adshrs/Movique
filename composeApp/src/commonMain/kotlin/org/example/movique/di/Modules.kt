@@ -8,6 +8,7 @@ import org.example.movique.networking.createHttpClient
 import org.example.movique.theme.thememode.ThemeRepository
 import org.example.movique.theme.thememode.ThemeRepositoryImpl
 import org.example.movique.viewmodel.HomeViewModel
+import org.example.movique.viewmodel.MediaListViewModel
 import org.example.movique.viewmodel.SearchViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModelOf
@@ -32,4 +33,5 @@ val sharedModule = module {
 	// Provide ViewModels
 	viewModelOf(::HomeViewModel)
 	viewModelOf(::SearchViewModel)
+	viewModelOf(::MediaListViewModel)
 }

@@ -1,0 +1,219 @@
+@file:OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+
+package org.example.movique.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import org.example.movique.util.Result
+import org.example.movique.viewmodel.MediaListViewModel
+import org.koin.compose.viewmodel.koinViewModel
+
+@Composable
+fun MediaListScreen(
+	navController: NavHostController,
+	category: String,
+) {
+	val mediaListViewModel = koinViewModel<MediaListViewModel>(key = category)
+	val isLoading by mediaListViewModel.isLoading.collectAsState()
+	val getPopularMovies = mediaListViewModel.getPopularMovies.collectAsState()
+	val getPopularTvShows = mediaListViewModel.getPopularTvShows.collectAsState()
+	val getTrendingThisWeek = mediaListViewModel.getTrendingThisWeek.collectAsState()
+	val listState = rememberLazyGridState()
+
+	// Initial fetch
+	LaunchedEffect(category) {
+		when (category) {
+			"popular_movies" -> mediaListViewModel.fetchPopularMovies()
+			"popular_tv" -> mediaListViewModel.fetchPopularTvShows()
+			"trending_this_week" -> mediaListViewModel.fetchTrendingThisWeek()
+		}
+	}
+
+	// Pagination: load next page when near bottom
+	LaunchedEffect(listState) {
+		snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+			.debounce(300L)
+			.collect { visible ->
+				val lastVisible = visible.lastOrNull()?.index ?: return@collect
+				val total = listState.layoutInfo.totalItemsCount
+				if (lastVisible >= total - 4 && !isLoading) {
+					when (category) {
+						"popular_movies" -> mediaListViewModel.fetchPopularMovies(append = true)
+						"popular_tv" -> mediaListViewModel.fetchPopularTvShows(append = true)
+						"trending_this_week" -> mediaListViewModel.fetchTrendingThisWeek(append = true)
+					}
+				}
+			}
+	}
+
+	val mediaItems = when (category) {
+		"popular_movies" ->
+			(getPopularMovies.value as? Result.Success)?.data?.results?.map {
+				MediaItem(it.id, it.title, it.posterPath, it.voteAverage, it.releaseDate, "movie")
+			} ?: emptyList()
+
+		"popular_tv" ->
+			(getPopularTvShows.value as? Result.Success)?.data?.results?.map {
+				MediaItem(it.id, it.name, it.posterPath, it.voteAverage, it.firstAirDate, "tv")
+			} ?: emptyList()
+
+		"trending_this_week" ->
+			(getTrendingThisWeek.value as? Result.Success)?.data?.results?.map {
+				MediaItem(
+					it.id,
+					it.title ?: it.name,
+					it.posterPath,
+					it.voteAverage,
+					it.releaseDate ?: it.firstAirDate,
+					it.mediaType
+				)
+			} ?: emptyList()
+
+		else -> emptyList()
+	}
+
+	Box(Modifier.fillMaxSize()) {
+		Scaffold {
+			LazyVerticalGrid(
+				state = listState,
+				modifier = Modifier
+					.fillMaxSize()
+					.padding(horizontal = 16.dp),
+				columns = GridCells.Fixed(3),
+				verticalArrangement = Arrangement.spacedBy(8.dp),
+				horizontalArrangement = Arrangement.spacedBy(8.dp)
+			) {
+				item(span = { GridItemSpan(maxLineSpan) }) {
+					Spacer(Modifier.height(96.dp))
+				}
+
+				items(mediaItems) { item ->
+					MediaCard(
+						mediaTypeEnabled = category == "trending_this_week",
+						mediaType = item.mediaType,
+						posterPath = item.posterPath,
+						title = item.title,
+						voteAverage = item.voteAverage,
+						releaseDate = item.releaseDate
+					)
+				}
+
+				if (isLoading) {
+					item(span = { GridItemSpan(maxLineSpan) }) {
+						Column(
+							modifier = Modifier
+								.fillMaxWidth()
+								.height(32.dp),
+							horizontalAlignment = Alignment.CenterHorizontally,
+							verticalArrangement = Arrangement.Center
+						) {
+							CircularProgressIndicator(Modifier.size(20.dp))
+						}
+					}
+				}
+
+				item(span = { GridItemSpan(maxLineSpan) }) {
+					Spacer(Modifier.height(84.dp))
+				}
+			}
+		}
+
+		TopAppBar(
+			modifier = Modifier
+				.height(80.dp)
+				.background(
+					Brush.verticalGradient(
+						listOf(
+							BottomAppBarDefaults.containerColor,
+							BottomAppBarDefaults.containerColor.copy(0.9f)
+						)
+					)
+				),
+			title = {
+				Box(
+					modifier = Modifier.fillMaxHeight(),
+					contentAlignment = Alignment.Center
+				) {
+					Text(
+						text = getTitleFromCategory(category),
+						style = MaterialTheme.typography.titleLarge,
+						color = MaterialTheme.colorScheme.onSurface
+					)
+				}
+			},
+			navigationIcon = {
+				Box(
+					modifier = Modifier.fillMaxHeight(),
+					contentAlignment = Alignment.Center
+				) {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(
+							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							contentDescription = "Back",
+							tint = MaterialTheme.colorScheme.onSurface
+						)
+					}
+				}
+			},
+			colors = TopAppBarDefaults.topAppBarColors(
+				containerColor = Color.Transparent
+			)
+		)
+	}
+}
+
+
+private fun getTitleFromCategory(category: String) = when (category) {
+	"popular_movies" -> "Popular Movies"
+	"popular_tv" -> "Popular TV Series"
+	"trending_this_week" -> "Trending This Week"
+	else -> "Media"
+}
+
+data class MediaItem(
+	val id: Int?,
+	val title: String?,
+	val posterPath: String?,
+	val voteAverage: Double?,
+	val releaseDate: String?,
+	val mediaType: String?
+)

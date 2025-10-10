@@ -32,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -68,6 +69,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Precision
 import kotlinx.coroutines.launch
+import org.example.movique.MediaListScreen
 import org.example.movique.theme.extraColors
 import org.example.movique.util.Result
 import org.example.movique.util.tools.Constants.NA
@@ -87,11 +89,14 @@ fun HomeScreen(
 	val popularMovies = (getPopularMovies.value as? Result.Success)?.data?.results ?: emptyList()
 	val getPopularTvShows = homeViewModel.getPopularTvShows.collectAsState()
 	val popularTvShows = (getPopularTvShows.value as? Result.Success)?.data?.results ?: emptyList()
+	val getTrendingThisWeek = homeViewModel.getTrendingThisWeek.collectAsState()
+	val trending = (getTrendingThisWeek.value as? Result.Success)?.data?.results ?: emptyList()
 	val isLoading by homeViewModel.isLoading.collectAsState()
 
 	LaunchedEffect(Unit) {
 		homeViewModel.fetchPopularMovies()
 		homeViewModel.fetchPopularTvShows()
+		homeViewModel.fetchTrendingThisWeek()
 	}
 
 	Box(
@@ -131,7 +136,7 @@ fun HomeScreen(
 							)
 							TextButton(
 								modifier = Modifier.height(30.dp),
-								onClick = { },
+								onClick = { navController.navigate(MediaListScreen("popular_movies")) },
 								contentPadding = PaddingValues(
 									start = 10.dp,
 									end = 4.dp,
@@ -201,14 +206,14 @@ fun HomeScreen(
 							Spacer(modifier = Modifier.width(8.dp))
 							Text(
 								modifier = Modifier.fillMaxWidth().weight(1f),
-								text = "Popular - TV Shows",
+								text = "Popular - TV Series",
 								style = MaterialTheme.typography.titleMedium,
 								fontWeight = FontWeight.Bold,
 								color = MaterialTheme.colorScheme.onSurface
 							)
 							TextButton(
 								modifier = Modifier.height(30.dp),
-								onClick = { },
+								onClick = { navController.navigate(MediaListScreen("popular_tv")) },
 								contentPadding = PaddingValues(
 									start = 10.dp,
 									end = 4.dp,
@@ -257,6 +262,7 @@ fun HomeScreen(
 						}
 					}
 				}
+				// Trending This Week Section
 				item {
 					Column(
 						modifier = Modifier.fillMaxWidth(),
@@ -277,14 +283,14 @@ fun HomeScreen(
 							Spacer(modifier = Modifier.width(8.dp))
 							Text(
 								modifier = Modifier.fillMaxWidth().weight(1f),
-								text = "Popular - Movies",
+								text = "Trending - This Week",
 								style = MaterialTheme.typography.titleMedium,
 								fontWeight = FontWeight.Bold,
 								color = MaterialTheme.colorScheme.onSurface
 							)
 							TextButton(
 								modifier = Modifier.height(30.dp),
-								onClick = { },
+								onClick = { navController.navigate(MediaListScreen("trending_this_week")) },
 								contentPadding = PaddingValues(
 									start = 10.dp,
 									end = 4.dp,
@@ -316,13 +322,15 @@ fun HomeScreen(
 								modifier = Modifier.fillMaxSize(),
 							) {
 								item { Spacer(modifier = Modifier.width(16.dp)) }
-								items(popularMovies.size) { index ->
+								items(trending.size) { index ->
+									val mediaType = trending[index].mediaType
 									MediaCard(
-										mediaType = "movie",
-										posterPath = popularMovies[index].posterPath,
-										title = popularMovies[index].title,
-										voteAverage = popularMovies[index].voteAverage,
-										releaseDate = popularMovies[index].releaseDate
+										mediaTypeEnabled = true,
+										mediaType = mediaType,
+										posterPath = trending[index].posterPath,
+										title = if (mediaType == "movie") trending[index].title else trending[index].name,
+										voteAverage = trending[index].voteAverage,
+										releaseDate = if (mediaType == "movie") trending[index].releaseDate else trending[index].firstAirDate
 									)
 									if (index < popularMovies.size - 1) {
 										Spacer(modifier = Modifier.width(8.dp))
@@ -390,7 +398,8 @@ fun HomeScreen(
 
 @Composable
 fun MediaCard(
-	mediaType: String,
+	mediaTypeEnabled: Boolean = false,
+	mediaType: String?,
 	posterPath: String?,
 	title: String?,
 	voteAverage: Double?,
@@ -426,6 +435,27 @@ fun MediaCard(
 						.fillMaxSize(),
 					contentScale = ContentScale.Crop,
 				)
+				if (mediaTypeEnabled) {
+					Badge(
+						modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
+						containerColor =
+							if (mediaType == "movie") MaterialTheme.colorScheme.primaryContainer.copy(0.8f)
+							else MaterialTheme.colorScheme.tertiaryContainer.copy(0.8f),
+						contentColor =
+							if (mediaType == "movie") MaterialTheme.colorScheme.primary
+							else MaterialTheme.colorScheme.tertiary
+					) {
+						Text(
+							text = when (mediaType) {
+								"movie" -> "Movie"
+								"tv" -> "TV Series"
+								else -> NA
+							},
+							style = MaterialTheme.typography.labelMedium,
+							modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+						)
+					}
+				}
 			}
 
 			Column(

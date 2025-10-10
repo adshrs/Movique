@@ -27,6 +27,10 @@ class TmdbRepository(
 		}
 	}
 
+	suspend fun getTrendingAllWeek(page: Int = 1): Result<MultiSearchResponseModel, NetworkError> {
+		return client.getTrending("all", "week", page)
+	}
+
 	suspend fun getPopularTvShows(page: Int): Result<TvSeriesResponseModel, NetworkError> {
 		return client.getPopularTvShows(page)
 	}

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.example.movique.data.models.MovieResponseModel
+import org.example.movique.data.models.MultiSearchResponseModel
 import org.example.movique.data.models.TvSeriesResponseModel
 import org.example.movique.data.repository.TmdbRepository
 import org.example.movique.util.NetworkError
@@ -17,6 +18,11 @@ class HomeViewModel(
 	private val _isLoading = MutableStateFlow(false)
 	val isLoading: StateFlow<Boolean> get() = _isLoading
 
+	private val _getTrendingThisWeek =
+		MutableStateFlow<Result<MultiSearchResponseModel, NetworkError>?>(null)
+	val getTrendingThisWeek: StateFlow<Result<MultiSearchResponseModel, NetworkError>?> =
+		_getTrendingThisWeek
+
 	private val _getPopularTvShows =
 		MutableStateFlow<Result<TvSeriesResponseModel, NetworkError>?>(null)
 	val getPopularTvShows: StateFlow<Result<TvSeriesResponseModel, NetworkError>?> =
@@ -26,6 +32,16 @@ class HomeViewModel(
 		MutableStateFlow<Result<MovieResponseModel, NetworkError>?>(null)
 	val getPopularMovies: StateFlow<Result<MovieResponseModel, NetworkError>?> =
 		_getPopularMovies
+
+	fun fetchTrendingThisWeek(page: Int = 1) {
+		viewModelScope.launch {
+			_isLoading.value = true
+			_getTrendingThisWeek.value = null // clear old data first
+			val result = tmdbRepository.getTrendingAllWeek(page)
+			_getTrendingThisWeek.value = result
+			_isLoading.value = false
+		}
+	}
 
 	fun fetchPopularTvShows(page: Int = 1) {
 		viewModelScope.launch {

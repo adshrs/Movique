@@ -3,6 +3,9 @@ package org.example.movique
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class MediaListScreen(val category: String)
+
+@Serializable
 object SplashScreen
 
 @Serializable
