@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -34,6 +34,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,9 +65,24 @@ fun MediaListScreen(
 	// Initial fetch
 	LaunchedEffect(category) {
 		when (category) {
-			"popular_movies" -> mediaListViewModel.fetchPopularMovies()
-			"popular_tv" -> mediaListViewModel.fetchPopularTvShows()
-			"trending_this_week" -> mediaListViewModel.fetchTrendingThisWeek()
+			"popular_movies" -> {
+				val current = mediaListViewModel.getPopularMovies.value
+				if ((current as? Result.Success)?.data?.results.isNullOrEmpty()) {
+					mediaListViewModel.fetchPopularMovies()
+				}
+			}
+			"popular_tv" -> {
+				val current = mediaListViewModel.getPopularTvShows.value
+				if ((current as? Result.Success)?.data?.results.isNullOrEmpty()) {
+					mediaListViewModel.fetchPopularTvShows()
+				}
+			}
+			"trending_this_week" -> {
+				val current = mediaListViewModel.getTrendingThisWeek.value
+				if ((current as? Result.Success)?.data?.results.isNullOrEmpty()) {
+					mediaListViewModel.fetchTrendingThisWeek()
+				}
+			}
 		}
 	}
 
@@ -111,14 +129,17 @@ fun MediaListScreen(
 		else -> emptyList()
 	}
 
-	Box(Modifier.fillMaxSize()) {
+	var activeCardId by remember { mutableStateOf<Int?>(null) }
+
+
+	Box(Modifier.fillMaxHeight()) {
 		Scaffold {
 			LazyVerticalGrid(
 				state = listState,
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(horizontal = 16.dp),
-				columns = GridCells.Fixed(3),
+				columns = GridCells.Adaptive(100.dp),
 				verticalArrangement = Arrangement.spacedBy(8.dp),
 				horizontalArrangement = Arrangement.spacedBy(8.dp)
 			) {
@@ -126,14 +147,21 @@ fun MediaListScreen(
 					Spacer(Modifier.height(96.dp))
 				}
 
-				items(mediaItems) { item ->
+				itemsIndexed(mediaItems) { index, item ->
+					val cardId = index
 					MediaCard(
+						cardId = cardId,
 						mediaTypeEnabled = category == "trending_this_week",
+						titleEnabled = false,
 						mediaType = item.mediaType,
 						posterPath = item.posterPath,
 						title = item.title,
 						voteAverage = item.voteAverage,
-						releaseDate = item.releaseDate
+						releaseDate = item.releaseDate,
+						isActive = activeCardId == cardId,
+						onCardClick = { clicked ->
+							activeCardId = if (activeCardId == clicked) null else clicked
+						}
 					)
 				}
 

@@ -2,6 +2,7 @@
 
 package org.example.movique.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOutQuad
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -9,8 +10,12 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,11 +32,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.ArrowCircleRight
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.CardDefaults
@@ -50,7 +58,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -94,10 +105,18 @@ fun HomeScreen(
 	val isLoading by homeViewModel.isLoading.collectAsState()
 
 	LaunchedEffect(Unit) {
-		homeViewModel.fetchPopularMovies()
-		homeViewModel.fetchPopularTvShows()
-		homeViewModel.fetchTrendingThisWeek()
+		if ((homeViewModel.getPopularMovies.value as? Result.Success)?.data?.results.isNullOrEmpty()) {
+			homeViewModel.fetchPopularMovies()
+		}
+		if ((homeViewModel.getPopularTvShows.value as? Result.Success)?.data?.results.isNullOrEmpty()) {
+			homeViewModel.fetchPopularTvShows()
+		}
+		if ((homeViewModel.getTrendingThisWeek.value as? Result.Success)?.data?.results.isNullOrEmpty()) {
+			homeViewModel.fetchTrendingThisWeek()
+		}
 	}
+
+	var activeCardId by remember { mutableStateOf<Int?>(null) }
 
 	Box(
 		modifier = Modifier.fillMaxSize()
@@ -168,13 +187,20 @@ fun HomeScreen(
 								modifier = Modifier.fillMaxSize(),
 							) {
 								item { Spacer(modifier = Modifier.width(16.dp)) }
-								items(popularMovies.size) { index ->
+								itemsIndexed(popularMovies) { index, item ->
+									val cardId = item.id?.plus(index)?.plus(1) ?: (index + 1)
+
 									MediaCard(
+										cardId = cardId,
 										mediaType = "movie",
-										posterPath = popularMovies[index].posterPath,
-										title = popularMovies[index].title,
-										voteAverage = popularMovies[index].voteAverage,
-										releaseDate = popularMovies[index].releaseDate
+										posterPath = item.posterPath,
+										title = item.title,
+										voteAverage = item.voteAverage,
+										releaseDate = item.releaseDate,
+										isActive = activeCardId == cardId,
+										onCardClick = { clicked ->
+											activeCardId = if (activeCardId == clicked) null else clicked
+										}
 									)
 									if (index < popularMovies.size - 1) {
 										Spacer(modifier = Modifier.width(8.dp))
@@ -245,13 +271,20 @@ fun HomeScreen(
 								modifier = Modifier.fillMaxSize(),
 							) {
 								item { Spacer(modifier = Modifier.width(16.dp)) }
-								items(popularTvShows.size) { index ->
+								itemsIndexed(popularTvShows) { index, item ->
+									val cardId = item.id + index + 2
+
 									MediaCard(
+										cardId = cardId,
 										mediaType = "tv",
-										posterPath = popularTvShows[index].posterPath,
-										title = popularTvShows[index].name,
-										voteAverage = popularTvShows[index].voteAverage,
-										releaseDate = popularTvShows[index].firstAirDate
+										posterPath = item.posterPath,
+										title = item.name,
+										voteAverage = item.voteAverage,
+										releaseDate = item.firstAirDate,
+										isActive = activeCardId == cardId,
+										onCardClick = { clicked ->
+											activeCardId = if (activeCardId == clicked) null else clicked
+										}
 									)
 									if (index < popularTvShows.size - 1) {
 										Spacer(modifier = Modifier.width(8.dp))
@@ -322,17 +355,24 @@ fun HomeScreen(
 								modifier = Modifier.fillMaxSize(),
 							) {
 								item { Spacer(modifier = Modifier.width(16.dp)) }
-								items(trending.size) { index ->
-									val mediaType = trending[index].mediaType
+								itemsIndexed(trending) { index, item ->
+									val mediaType = item.mediaType
+									val cardId = item.id + index + 3
+
 									MediaCard(
+										cardId = cardId,
 										mediaTypeEnabled = true,
 										mediaType = mediaType,
-										posterPath = trending[index].posterPath,
-										title = if (mediaType == "movie") trending[index].title else trending[index].name,
-										voteAverage = trending[index].voteAverage,
-										releaseDate = if (mediaType == "movie") trending[index].releaseDate else trending[index].firstAirDate
+										posterPath = item.posterPath,
+										title = if (mediaType == "movie") item.title else item.name,
+										voteAverage = item.voteAverage,
+										releaseDate = if (mediaType == "movie") item.releaseDate else item.firstAirDate,
+										isActive = activeCardId == cardId,
+										onCardClick = { clicked ->
+											activeCardId = if (activeCardId == clicked) null else clicked
+										}
 									)
-									if (index < popularMovies.size - 1) {
+									if (index < trending.size - 1) {
 										Spacer(modifier = Modifier.width(8.dp))
 									}
 								}
@@ -398,102 +438,176 @@ fun HomeScreen(
 
 @Composable
 fun MediaCard(
+	cardId: Int,
 	mediaTypeEnabled: Boolean = false,
+	titleEnabled: Boolean = true,
 	mediaType: String?,
 	posterPath: String?,
 	title: String?,
 	voteAverage: Double?,
-	releaseDate: String?
+	releaseDate: String?,
+	isActive: Boolean = false,
+	onCardClick: (Int?) -> Unit = {}
 ) {
-	OutlinedCard(
-		modifier = Modifier.width(120.dp),
-		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.surfaceContainer,
-			contentColor = MaterialTheme.colorScheme.onSurface
-		),
-		border = BorderStroke(
-			0.5.dp,
-			MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-		),
+	Box(
+		modifier = Modifier
+			.width(120.dp)
+			.clip(RoundedCornerShape(10.dp))
+			.border(
+				border = BorderStroke(
+					0.5.dp,
+					MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+				),
+				shape = RoundedCornerShape(12.dp)
+			)
 	) {
-		Column {
-			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.aspectRatio(2f / 3f)
-					.background(MaterialTheme.colorScheme.surfaceVariant),
-				contentAlignment = Alignment.Center
-			) {
-				AsyncImage(
-					model = ImageRequest.Builder(LocalPlatformContext.current)
-						.data("https://image.tmdb.org/t/p/w500${posterPath}")
-						.crossfade(true)
-						.precision(Precision.INEXACT)
-						.build(),
-					contentDescription = title,
+		OutlinedCard(
+			modifier = Modifier.width(120.dp),
+			colors = CardDefaults.cardColors(
+				containerColor = MaterialTheme.colorScheme.surfaceContainer,
+				contentColor = MaterialTheme.colorScheme.onSurface
+			),
+			border = BorderStroke(
+				0.5.dp,
+				MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+			),
+			onClick = { onCardClick(cardId) }
+		) {
+			Column {
+				Box(
 					modifier = Modifier
-						.fillMaxSize(),
-					contentScale = ContentScale.Crop,
-				)
-				if (mediaTypeEnabled) {
-					Badge(
-						modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
-						containerColor =
-							if (mediaType == "movie") MaterialTheme.colorScheme.primaryContainer.copy(0.8f)
-							else MaterialTheme.colorScheme.tertiaryContainer.copy(0.8f),
-						contentColor =
-							if (mediaType == "movie") MaterialTheme.colorScheme.primary
-							else MaterialTheme.colorScheme.tertiary
-					) {
+						.fillMaxWidth()
+						.aspectRatio(2f / 3f)
+						.background(MaterialTheme.colorScheme.surfaceVariant),
+					contentAlignment = Alignment.Center
+				) {
+					AsyncImage(
+						model = ImageRequest.Builder(LocalPlatformContext.current)
+							.data("https://image.tmdb.org/t/p/w500${posterPath}")
+							.crossfade(true)
+							.precision(Precision.INEXACT)
+							.build(),
+						contentDescription = title,
+						modifier = Modifier
+							.fillMaxSize(),
+						contentScale = ContentScale.Crop,
+					)
+					if (mediaTypeEnabled) {
+						Badge(
+							modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
+							containerColor =
+								if (mediaType == "movie") MaterialTheme.colorScheme.primaryContainer.copy(
+									0.8f
+								)
+								else MaterialTheme.colorScheme.tertiaryContainer.copy(0.8f),
+							contentColor =
+								if (mediaType == "movie") MaterialTheme.colorScheme.primary
+								else MaterialTheme.colorScheme.tertiary
+						) {
+							Text(
+								text = when (mediaType) {
+									"movie" -> "Movie"
+									"tv" -> "TV Series"
+									else -> NA
+								},
+								style = MaterialTheme.typography.labelMedium,
+								modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+							)
+						}
+					}
+				}
+
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(horizontal = 8.dp, vertical = 8.dp),
+					verticalArrangement = Arrangement.spacedBy(10.dp)
+				) {
+					if (titleEnabled) {
 						Text(
-							text = when (mediaType) {
-								"movie" -> "Movie"
-								"tv" -> "TV Series"
-								else -> NA
-							},
+							text = title ?: "No Title",
+							style = MaterialTheme.typography.titleSmall,
+							color = MaterialTheme.colorScheme.onSurface,
+							minLines = 2,
+							maxLines = 2,
+							overflow = TextOverflow.Ellipsis
+						)
+					}
+					Row(
+						modifier = Modifier
+							.fillMaxWidth(),
+						verticalAlignment = Alignment.CenterVertically
+					) {
+						Icon(
+							imageVector = Icons.Default.Star,
+							contentDescription = "Rating",
+							modifier = Modifier.size(16.dp),
+							tint = MaterialTheme.extraColors.ratingGold
+						)
+						Spacer(modifier = Modifier.width(4.dp))
+						Text(
+							modifier = Modifier.weight(1f),
+							text = if (voteAverage != null) "${round(voteAverage * 10) / 10}" else NA,
+							style = MaterialTheme.typography.labelMedium
+						)
+						Text(
+							text = releaseDate?.take(4) ?: NA,
 							style = MaterialTheme.typography.labelMedium,
-							modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+							color = MaterialTheme.colorScheme.onSurfaceVariant
 						)
 					}
 				}
 			}
+		}
 
-			Column(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(horizontal = 8.dp, vertical = 8.dp),
-				verticalArrangement = Arrangement.spacedBy(10.dp)
-			) {
-				Text(
-					text = title ?: "No Title",
-					style = MaterialTheme.typography.titleSmall,
-					color = MaterialTheme.colorScheme.onSurface,
-					minLines = 2,
-					maxLines = 2,
-					overflow = TextOverflow.Ellipsis
+		// Card action overlay
+		Box(
+			modifier = Modifier
+				.matchParentSize()
+				.background(Color.Black.copy(if (isActive) 0.4f else 0f))
+				.clickable(
+					onClick = { onCardClick(cardId) }
 				)
-				Row(
-					modifier = Modifier
-						.fillMaxWidth(),
-					verticalAlignment = Alignment.CenterVertically
-				) {
-					Icon(
-						imageVector = Icons.Default.Star,
-						contentDescription = "Rating",
-						modifier = Modifier.size(16.dp),
-						tint = MaterialTheme.extraColors.ratingGold
-					)
-					Spacer(modifier = Modifier.width(4.dp))
-					Text(
-						modifier = Modifier.weight(1f),
-						text = if (voteAverage != null) "${round(voteAverage * 10) / 10}" else NA,
-						style = MaterialTheme.typography.labelMedium
-					)
-					Text(
-						text = releaseDate?.take(4) ?: NA,
-						style = MaterialTheme.typography.labelMedium,
-						color = MaterialTheme.colorScheme.onSurfaceVariant
-					)
+		)
+		AnimatedVisibility(
+			visible = isActive,
+			enter = expandVertically(),
+			exit = shrinkVertically()
+		) {
+			Box(
+				modifier = Modifier
+					.align(Alignment.TopCenter)
+					.width(120.dp)
+					.background(MaterialTheme.colorScheme.surfaceContainer.copy(0.95f)),
+				contentAlignment = Alignment.Center
+			) {
+				Row {
+					Box(
+						modifier = Modifier
+							.weight(1f)
+							.clickable(
+								onClick = { }
+							),
+					) {
+						Icon(
+							modifier = Modifier.padding(vertical = 14.dp).align(Alignment.Center),
+							imageVector = Icons.Rounded.Add,
+							contentDescription = "Add"
+						)
+					}
+					Box(
+						modifier = Modifier
+							.weight(1f)
+							.clickable(
+								onClick = { }
+							),
+					) {
+						Icon(
+							modifier = Modifier.padding(vertical = 14.dp).align(Alignment.Center),
+							imageVector = Icons.Outlined.ArrowCircleRight,
+							contentDescription = "Go to Details"
+						)
+					}
 				}
 			}
 		}
