@@ -1,8 +1,10 @@
 package org.example.movique.data.repository
 
-import org.example.movique.data.models.MovieResponseModel
-import org.example.movique.data.models.MultiSearchResponseModel
-import org.example.movique.data.models.TvSeriesResponseModel
+import org.example.movique.data.models.media.MovieResponseModel
+import org.example.movique.data.models.search.MultiSearchResponseModel
+import org.example.movique.data.models.media.TvSeriesResponseModel
+import org.example.movique.data.models.mediadetails.MovieDetailsResponseModel
+import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.networking.TmdbClient
 import org.example.movique.util.NetworkError
 import org.example.movique.util.Result
@@ -10,6 +12,13 @@ import org.example.movique.util.Result
 class TmdbRepository(
 	private val client: TmdbClient
 ) {
+	suspend fun getTvSeriesDetails(id: Int): Result<TvSeriesDetailsResponseModel, NetworkError> {
+		return client.getTvSeriesDetails(id)
+	}
+
+	suspend fun getMovieDetails(id: Int): Result<MovieDetailsResponseModel, NetworkError> {
+		return client.getMovieDetails(id)
+	}
 
 	suspend fun multiSearch(query: String, page: Int = 1): Result<MultiSearchResponseModel, NetworkError> {
 		return try {
@@ -32,7 +41,7 @@ class TmdbRepository(
 	}
 
 	suspend fun getPopularTvShows(page: Int): Result<TvSeriesResponseModel, NetworkError> {
-		return client.getPopularTvShows(page)
+		return client.getPopularTvSeries(page)
 	}
 
 	suspend fun getPopularMovies(page: Int = 1): Result<MovieResponseModel, NetworkError> {

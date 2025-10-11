@@ -66,7 +66,7 @@ import coil3.size.Precision
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import org.example.movique.data.models.MultiSearchResponseModel
+import org.example.movique.data.models.search.MultiSearchResponseModel
 import org.example.movique.theme.extraColors
 import org.example.movique.ui.components.searchbar.CustomSearchBar
 import org.example.movique.util.Result

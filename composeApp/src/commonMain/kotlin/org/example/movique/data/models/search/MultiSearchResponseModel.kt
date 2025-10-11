@@ -1,4 +1,4 @@
-package org.example.movique.data.models
+package org.example.movique.data.models.search
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
+import org.example.movique.MediaDetailsScreen
+import org.example.movique.ui.components.card.MediaCard
 import org.example.movique.util.Result
 import org.example.movique.viewmodel.MediaListViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -71,12 +73,14 @@ fun MediaListScreen(
 					mediaListViewModel.fetchPopularMovies()
 				}
 			}
+
 			"popular_tv" -> {
 				val current = mediaListViewModel.getPopularTvShows.value
 				if ((current as? Result.Success)?.data?.results.isNullOrEmpty()) {
 					mediaListViewModel.fetchPopularTvShows()
 				}
 			}
+
 			"trending_this_week" -> {
 				val current = mediaListViewModel.getTrendingThisWeek.value
 				if ((current as? Result.Success)?.data?.results.isNullOrEmpty()) {
@@ -133,6 +137,7 @@ fun MediaListScreen(
 
 
 	Box(Modifier.fillMaxHeight()) {
+		// Screen content
 		Scaffold {
 			LazyVerticalGrid(
 				state = listState,
@@ -161,6 +166,15 @@ fun MediaListScreen(
 						isActive = activeCardId == cardId,
 						onCardClick = { clicked ->
 							activeCardId = if (activeCardId == clicked) null else clicked
+						},
+						onAddActionClick = { },
+						onDetailActionClick = {
+							navController.navigate(
+								MediaDetailsScreen(
+									mediaId = item.id ?: 0,
+									mediaType = item.mediaType ?: "movie"
+								)
+							)
 						}
 					)
 				}
@@ -185,6 +199,7 @@ fun MediaListScreen(
 			}
 		}
 
+		//Top Bar
 		TopAppBar(
 			modifier = Modifier
 				.height(80.dp)

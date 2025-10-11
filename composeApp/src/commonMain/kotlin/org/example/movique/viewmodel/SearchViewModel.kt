@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.example.movique.data.models.MultiSearchResponseModel
+import org.example.movique.data.models.search.MultiSearchResponseModel
 import org.example.movique.data.repository.TmdbRepository
 import org.example.movique.util.NetworkError
 import org.example.movique.util.Result

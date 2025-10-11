@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.example.movique.data.models.MovieResponseModel
-import org.example.movique.data.models.MultiSearchResponseModel
-import org.example.movique.data.models.TvSeriesResponseModel
+import org.example.movique.data.models.media.MovieResponseModel
+import org.example.movique.data.models.search.MultiSearchResponseModel
+import org.example.movique.data.models.media.TvSeriesResponseModel
 import org.example.movique.data.repository.TmdbRepository
 import org.example.movique.util.NetworkError
 import org.example.movique.util.Result

@@ -90,6 +90,7 @@ import org.example.movique.theme.thememode.ThemeMode
 import org.example.movique.theme.thememode.ThemeRepository
 import org.example.movique.ui.FavoritesScreen
 import org.example.movique.ui.HomeScreen
+import org.example.movique.ui.MediaDetailsScreen
 import org.example.movique.ui.MediaListScreen
 import org.example.movique.ui.ProfileScreen
 import org.example.movique.ui.SearchScreen
@@ -145,6 +146,10 @@ private fun MoviqueAppContent(
 				popEnterTransition = { EnterTransition.None },
 				popExitTransition = { ExitTransition.None }
 			) {
+				composable<MediaDetailsScreen> {
+					val args = it.toRoute<MediaDetailsScreen>()
+					MediaDetailsScreen(navController, args.mediaId, args.mediaType)
+				}
 				composable<MediaListScreen> {
 					val args = it.toRoute<MediaListScreen>()
 					MediaListScreen(navController, args.category)

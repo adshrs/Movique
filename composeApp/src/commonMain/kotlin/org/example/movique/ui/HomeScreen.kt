@@ -80,8 +80,11 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Precision
 import kotlinx.coroutines.launch
+import org.example.movique.MediaDetailsScreen
 import org.example.movique.MediaListScreen
 import org.example.movique.theme.extraColors
+import org.example.movique.ui.components.card.MediaCard
+import org.example.movique.ui.components.cardshimmer.ShimmerLoadingRow
 import org.example.movique.util.Result
 import org.example.movique.util.tools.Constants.NA
 import org.example.movique.viewmodel.HomeViewModel
@@ -200,6 +203,15 @@ fun HomeScreen(
 										isActive = activeCardId == cardId,
 										onCardClick = { clicked ->
 											activeCardId = if (activeCardId == clicked) null else clicked
+										},
+										onAddActionClick = { },
+										onDetailActionClick = {
+											navController.navigate(
+												MediaDetailsScreen(
+													mediaId = item.id ?: 0,
+													mediaType = "movie"
+												)
+											)
 										}
 									)
 									if (index < popularMovies.size - 1) {
@@ -284,6 +296,15 @@ fun HomeScreen(
 										isActive = activeCardId == cardId,
 										onCardClick = { clicked ->
 											activeCardId = if (activeCardId == clicked) null else clicked
+										},
+										onAddActionClick = { },
+										onDetailActionClick = {
+											navController.navigate(
+												MediaDetailsScreen(
+													mediaId = item.id ?: 0,
+													mediaType = "tv"
+												)
+											)
 										}
 									)
 									if (index < popularTvShows.size - 1) {
@@ -370,6 +391,15 @@ fun HomeScreen(
 										isActive = activeCardId == cardId,
 										onCardClick = { clicked ->
 											activeCardId = if (activeCardId == clicked) null else clicked
+										},
+										onAddActionClick = { },
+										onDetailActionClick = {
+											navController.navigate(
+												MediaDetailsScreen(
+													mediaId = item.id,
+													mediaType = item.mediaType ?: "movie"
+												)
+											)
 										}
 									)
 									if (index < trending.size - 1) {
@@ -433,329 +463,5 @@ fun HomeScreen(
 				actionIconContentColor = MaterialTheme.colorScheme.onSurface
 			)
 		)
-	}
-}
-
-@Composable
-fun MediaCard(
-	cardId: Int,
-	mediaTypeEnabled: Boolean = false,
-	titleEnabled: Boolean = true,
-	mediaType: String?,
-	posterPath: String?,
-	title: String?,
-	voteAverage: Double?,
-	releaseDate: String?,
-	isActive: Boolean = false,
-	onCardClick: (Int?) -> Unit = {}
-) {
-	Box(
-		modifier = Modifier
-			.width(120.dp)
-			.clip(RoundedCornerShape(10.dp))
-			.border(
-				border = BorderStroke(
-					0.5.dp,
-					MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-				),
-				shape = RoundedCornerShape(12.dp)
-			)
-	) {
-		OutlinedCard(
-			modifier = Modifier.width(120.dp),
-			colors = CardDefaults.cardColors(
-				containerColor = MaterialTheme.colorScheme.surfaceContainer,
-				contentColor = MaterialTheme.colorScheme.onSurface
-			),
-			border = BorderStroke(
-				0.5.dp,
-				MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-			),
-			onClick = { onCardClick(cardId) }
-		) {
-			Column {
-				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.aspectRatio(2f / 3f)
-						.background(MaterialTheme.colorScheme.surfaceVariant),
-					contentAlignment = Alignment.Center
-				) {
-					AsyncImage(
-						model = ImageRequest.Builder(LocalPlatformContext.current)
-							.data("https://image.tmdb.org/t/p/w500${posterPath}")
-							.crossfade(true)
-							.precision(Precision.INEXACT)
-							.build(),
-						contentDescription = title,
-						modifier = Modifier
-							.fillMaxSize(),
-						contentScale = ContentScale.Crop,
-					)
-					if (mediaTypeEnabled) {
-						Badge(
-							modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
-							containerColor =
-								if (mediaType == "movie") MaterialTheme.colorScheme.primaryContainer.copy(
-									0.8f
-								)
-								else MaterialTheme.colorScheme.tertiaryContainer.copy(0.8f),
-							contentColor =
-								if (mediaType == "movie") MaterialTheme.colorScheme.primary
-								else MaterialTheme.colorScheme.tertiary
-						) {
-							Text(
-								text = when (mediaType) {
-									"movie" -> "Movie"
-									"tv" -> "TV Series"
-									else -> NA
-								},
-								style = MaterialTheme.typography.labelMedium,
-								modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-							)
-						}
-					}
-				}
-
-				Column(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(horizontal = 8.dp, vertical = 8.dp),
-					verticalArrangement = Arrangement.spacedBy(10.dp)
-				) {
-					if (titleEnabled) {
-						Text(
-							text = title ?: "No Title",
-							style = MaterialTheme.typography.titleSmall,
-							color = MaterialTheme.colorScheme.onSurface,
-							minLines = 2,
-							maxLines = 2,
-							overflow = TextOverflow.Ellipsis
-						)
-					}
-					Row(
-						modifier = Modifier
-							.fillMaxWidth(),
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						Icon(
-							imageVector = Icons.Default.Star,
-							contentDescription = "Rating",
-							modifier = Modifier.size(16.dp),
-							tint = MaterialTheme.extraColors.ratingGold
-						)
-						Spacer(modifier = Modifier.width(4.dp))
-						Text(
-							modifier = Modifier.weight(1f),
-							text = if (voteAverage != null) "${round(voteAverage * 10) / 10}" else NA,
-							style = MaterialTheme.typography.labelMedium
-						)
-						Text(
-							text = releaseDate?.take(4) ?: NA,
-							style = MaterialTheme.typography.labelMedium,
-							color = MaterialTheme.colorScheme.onSurfaceVariant
-						)
-					}
-				}
-			}
-		}
-
-		// Card action overlay
-		Box(
-			modifier = Modifier
-				.matchParentSize()
-				.background(Color.Black.copy(if (isActive) 0.4f else 0f))
-				.clickable(
-					onClick = { onCardClick(cardId) }
-				)
-		)
-		AnimatedVisibility(
-			visible = isActive,
-			enter = expandVertically(),
-			exit = shrinkVertically()
-		) {
-			Box(
-				modifier = Modifier
-					.align(Alignment.TopCenter)
-					.width(120.dp)
-					.background(MaterialTheme.colorScheme.surfaceContainer.copy(0.95f)),
-				contentAlignment = Alignment.Center
-			) {
-				Row {
-					Box(
-						modifier = Modifier
-							.weight(1f)
-							.clickable(
-								onClick = { }
-							),
-					) {
-						Icon(
-							modifier = Modifier.padding(vertical = 14.dp).align(Alignment.Center),
-							imageVector = Icons.Rounded.Add,
-							contentDescription = "Add"
-						)
-					}
-					Box(
-						modifier = Modifier
-							.weight(1f)
-							.clickable(
-								onClick = { }
-							),
-					) {
-						Icon(
-							modifier = Modifier.padding(vertical = 14.dp).align(Alignment.Center),
-							imageVector = Icons.Outlined.ArrowCircleRight,
-							contentDescription = "Go to Details"
-						)
-					}
-				}
-			}
-		}
-	}
-}
-
-@Composable
-fun ShimmerLoadingRow() {
-	val shimmerColors = listOf(
-		Color.Gray.copy(alpha = 0.6f),
-		Color.Gray.copy(alpha = 0.2f),
-		Color.Gray.copy(alpha = 0.6f)
-	)
-	val transition = rememberInfiniteTransition()
-	val translateAnim by transition.animateFloat(
-		initialValue = 0f,
-		targetValue = 1000f,
-		animationSpec = infiniteRepeatable(
-			animation = tween(
-				durationMillis = 1200,
-				easing = LinearEasing
-			),
-			repeatMode = RepeatMode.Restart
-		)
-	)
-
-	LazyRow(
-		modifier = Modifier.fillMaxSize(),
-		contentPadding = PaddingValues(horizontal = 16.dp)
-	) {
-		items(5) {
-			ShimmerCard(
-				modifier = Modifier
-					.width(128.dp)
-					.padding(end = 8.dp),
-				translateAnim = translateAnim,
-				shimmerColors = shimmerColors
-			)
-		}
-	}
-}
-
-@Composable
-fun ShimmerCard(
-	modifier: Modifier = Modifier,
-	translateAnim: Float = 0f,
-	shimmerColors: List<Color> = listOf(
-		Color(0xFFE0E0E0).copy(alpha = 0.3f), // Subtle light gray
-		Color(0xFFE0E0E0).copy(alpha = 0.1f), // Softer highlight
-		Color(0xFFE0E0E0).copy(alpha = 0.3f)  // Back to base
-	)
-) {
-	// Pulse animation for subtle scaling effect
-	val pulseAnim by rememberInfiniteTransition().animateFloat(
-		initialValue = 0.99f,
-		targetValue = 1.01f,
-		animationSpec = infiniteRepeatable(
-			animation = tween(
-				durationMillis = 800,
-				easing = EaseInOutQuad
-			),
-			repeatMode = RepeatMode.Reverse
-		)
-	)
-
-	// Gradient brush for shimmer effect
-	val brush = Brush.linearGradient(
-		colors = shimmerColors,
-		start = Offset(translateAnim - 300f, 0f), // Wider gradient for smoother effect
-		end = Offset(translateAnim, 0f)
-	)
-
-	OutlinedCard(
-		modifier = modifier
-			.width(120.dp) // Exact width as MovieCard
-		, // Subtle pulse effect
-		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.surfaceContainer,
-			contentColor = MaterialTheme.colorScheme.onSurface
-		),
-		border = BorderStroke(
-			0.5.dp,
-			MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-		) // Same border as MovieCard
-	) {
-		Column {
-			// Poster placeholder (matches MovieCard's aspect ratio)
-			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.aspectRatio(2f / 3f) // Exact 2:3 ratio as MovieCard
-					.background(brush)
-					.clip(MaterialTheme.shapes.medium) // Rounded corners for polish
-			)
-
-			// Text area (matches MovieCard's padding and spacing)
-			Column(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(horizontal = 8.dp, vertical = 8.dp), // Exact padding as MovieCard
-				verticalArrangement = Arrangement.spacedBy(10.dp) // Exact spacing as MovieCard
-			) {
-				// Title placeholder (matches title text size and height)
-				Column {
-					Box(
-						modifier = Modifier
-							.fillMaxWidth() // Slightly shorter to mimic title variation
-							.height(16.dp) // Approximates titleSmall with 2 lines
-							.background(brush, RoundedCornerShape(8.dp))
-
-					)
-					Spacer(modifier = Modifier.height(4.dp))
-					Box(
-						modifier = Modifier
-							.fillMaxWidth() // Slightly shorter to mimic title variation
-							.height(16.dp) // Approximates titleSmall with 2 lines
-							.background(brush, RoundedCornerShape(8.dp))
-					)
-				}
-				// Rating placeholder (matches rating row size)
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					verticalAlignment = Alignment.CenterVertically,
-					horizontalArrangement = Arrangement.SpaceBetween
-				) {
-					Row {
-						Box(
-							modifier = Modifier
-								.size(14.dp) // Matches Star icon size
-								.background(brush, RoundedCornerShape(8.dp))
-
-						)
-						Spacer(modifier = Modifier.width(4.dp)) // Mimic icon-text gap
-						Box(
-							modifier = Modifier
-								.width(32.dp) // Approximates rating text width
-								.height(14.dp) // Matches bodySmall
-								.background(brush, RoundedCornerShape(8.dp))
-						)
-					}
-					Box(
-						modifier = Modifier
-							.width(40.dp) // Approximates rating text width
-							.height(14.dp) // Matches bodySmall
-							.background(brush, RoundedCornerShape(8.dp))
-					)
-				}
-			}
-		}
 	}
 }

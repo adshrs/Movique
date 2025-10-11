@@ -7,9 +7,11 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.serialization.SerializationException
-import org.example.movique.data.models.MovieResponseModel
-import org.example.movique.data.models.MultiSearchResponseModel
-import org.example.movique.data.models.TvSeriesResponseModel
+import org.example.movique.data.models.mediadetails.MovieDetailsResponseModel
+import org.example.movique.data.models.media.MovieResponseModel
+import org.example.movique.data.models.search.MultiSearchResponseModel
+import org.example.movique.data.models.media.TvSeriesResponseModel
+import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.getTmdbApiKey
 import org.example.movique.util.NetworkError
 import org.example.movique.util.Result
@@ -20,9 +22,9 @@ class TmdbClient(
 	private val apiKey = getTmdbApiKey()
 	private val baseUrl = "https://api.themoviedb.org/3/"
 
-	suspend fun getMovieDetailsWithCredits(movieId: Int): Result<MovieResponseModel, NetworkError> {
+	suspend fun getTvSeriesDetails(id: Int): Result<TvSeriesDetailsResponseModel, NetworkError> {
 		val response = try {
-			httpClient.get("${baseUrl}movie/$movieId?append_to_response=credits") {
+			httpClient.get("${baseUrl}tv/$id") {
 				parameter("api_key", apiKey)
 				parameter("language", "en-US")
 			}
@@ -34,8 +36,33 @@ class TmdbClient(
 
 		return when (response.status.value) {
 			in 200..299 -> {
-				val data = response.body<MovieResponseModel>()
-				// Access credits via data.credits (if you update MovieResponseModel to include it)
+				val data = response.body<TvSeriesDetailsResponseModel>()
+				Result.Success(data)
+			}
+			401 -> Result.Error(NetworkError.UNAUTHORIZED)
+			409 -> Result.Error(NetworkError.CONFLICT)
+			408 -> Result.Error(NetworkError.REQUEST_TIMEOUT)
+			413 -> Result.Error(NetworkError.PAYLOAD_TOO_LARGE)
+			in 500..599 -> Result.Error(NetworkError.SERVER_ERROR)
+			else -> Result.Error(NetworkError.UNKNOWN)
+		}
+	}
+
+	suspend fun getMovieDetails(id: Int): Result<MovieDetailsResponseModel, NetworkError> {
+		val response = try {
+			httpClient.get("${baseUrl}movie/$id") {
+				parameter("api_key", apiKey)
+				parameter("language", "en-US")
+			}
+		} catch (e: UnresolvedAddressException) {
+			return Result.Error(NetworkError.NO_INTERNET)
+		} catch (e: SerializationException) {
+			return Result.Error(NetworkError.SERIALIZATION)
+		}
+
+		return when (response.status.value) {
+			in 200..299 -> {
+				val data = response.body<MovieDetailsResponseModel>()
 				Result.Success(data)
 			}
 			401 -> Result.Error(NetworkError.UNAUTHORIZED)
@@ -137,7 +164,7 @@ class TmdbClient(
 		}
 	}
 
-	suspend fun getPopularTvShows(page: Int): Result<TvSeriesResponseModel, NetworkError> {
+	suspend fun getPopularTvSeries(page: Int): Result<TvSeriesResponseModel, NetworkError> {
 		val response = try {
 			httpClient.get("${baseUrl}tv/popular") {
 				parameter("api_key", apiKey)
