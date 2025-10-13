@@ -36,6 +36,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -63,9 +64,11 @@ fun MediaListScreen(
 	val getPopularTvShows = mediaListViewModel.getPopularTvShows.collectAsState()
 	val getTrendingThisWeek = mediaListViewModel.getTrendingThisWeek.collectAsState()
 	val listState = rememberLazyGridState()
+	var activeCardId by rememberSaveable { mutableStateOf<Int?>(null) }
 
 	// Initial fetch
 	LaunchedEffect(category) {
+		activeCardId = null
 		when (category) {
 			"popular_movies" -> {
 				val current = mediaListViewModel.getPopularMovies.value
@@ -132,9 +135,6 @@ fun MediaListScreen(
 
 		else -> emptyList()
 	}
-
-	var activeCardId by remember { mutableStateOf<Int?>(null) }
-
 
 	Box(Modifier.fillMaxHeight()) {
 		// Screen content

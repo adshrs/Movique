@@ -76,7 +76,13 @@ fun MediaCard(
 			)
 	) {
 		OutlinedCard(
-			modifier = Modifier.width(120.dp),
+			modifier = Modifier
+				.width(120.dp)
+				.clickable(
+					indication = null,
+					interactionSource = null,
+					onClick = { onCardClick(cardId) }
+				),
 			colors = CardDefaults.cardColors(
 				containerColor = MaterialTheme.colorScheme.surfaceContainer,
 				contentColor = MaterialTheme.colorScheme.onSurface
@@ -84,8 +90,7 @@ fun MediaCard(
 			border = BorderStroke(
 				0.5.dp,
 				MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-			),
-			onClick = { onCardClick(cardId) }
+			)
 		) {
 			Column {
 				Box(
@@ -180,8 +185,14 @@ fun MediaCard(
 		Box(
 			modifier = Modifier
 				.matchParentSize()
-				.background(Color.Black.copy(if (isActive) 0.4f else 0f))
+				.background(
+					color = Color.Black.copy(if (isActive) 0.3f else 0f),
+					shape = RoundedCornerShape(12.dp)
+				)
+				.clip(RoundedCornerShape(12.dp))
 				.clickable(
+					indication = null,
+					interactionSource = null,
 					onClick = { onCardClick(cardId) }
 				)
 				.animateContentSize()
@@ -194,8 +205,13 @@ fun MediaCard(
 			Box(
 				modifier = Modifier
 					.align(Alignment.TopCenter)
-					.width(120.dp)
-					.background(MaterialTheme.colorScheme.surfaceContainer.copy(0.90f)),
+					.fillMaxWidth()
+					.padding(8.dp)
+					.background(
+						color = MaterialTheme.colorScheme.surfaceContainer.copy(0.90f),
+						shape = RoundedCornerShape(12.dp)
+					)
+					.clip(RoundedCornerShape(12.dp)),
 				contentAlignment = Alignment.Center
 			) {
 				Row {

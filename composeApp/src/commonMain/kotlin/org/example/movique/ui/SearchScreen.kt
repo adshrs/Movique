@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -46,6 +48,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -54,9 +57,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
@@ -66,8 +73,10 @@ import coil3.size.Precision
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import org.example.movique.MediaDetailsScreen
 import org.example.movique.data.models.search.MultiSearchResponseModel
 import org.example.movique.theme.extraColors
+import org.example.movique.ui.components.card.MultiSearchResultCard
 import org.example.movique.ui.components.searchbar.CustomSearchBar
 import org.example.movique.util.Result
 import org.example.movique.util.tools.Constants.NA
@@ -84,15 +93,8 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 	val isLoading by searchViewModel.isLoading.collectAsState()
 	val listState = rememberLazyListState()
 	val snackbarHostState = remember { SnackbarHostState() }
-	var query by remember { mutableStateOf("") }
-	var isInitialized by remember { mutableStateOf(false) }
-
-	// Reset search state when screen is first composed or recomposed after navigation
-	LaunchedEffect(Unit) {
-		query = ""
-		searchViewModel.resetSearch()
-		isInitialized = true
-	}
+	var query by rememberSaveable { mutableStateOf("") }
+	var activeCardId by rememberSaveable { mutableStateOf<Int?>(null) }
 
 	// Live search: Trigger search only for non-empty queries with debounce
 	LaunchedEffect(query) {
@@ -102,6 +104,7 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 			.collect { searchQuery ->
 				if (searchQuery.isNotBlank()) {
 					searchViewModel.fetchMultiSearchResults(searchQuery)
+					activeCardId = null
 				} else {
 					searchViewModel.resetSearch()
 				}
@@ -131,18 +134,17 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 			) {
 				item { Spacer(modifier = Modifier.height(100.dp)) }
 				when {
-					!isInitialized -> {
-						// Show nothing until initialized to avoid flicker
-						item { Spacer(modifier = Modifier.height(0.dp)) }
-					}
 					query.isBlank() && searchResults.isEmpty() -> {
 						item {
 							Text(
-								text = "Your search results will appear here.",
+								text = AnnotatedString.Builder().apply {
+									withStyle(SpanStyle(fontSize = 22.sp)) { append("⌕") }
+									append("  Your search results will appear here.")
+								}.toAnnotatedString(),
 								modifier = Modifier
 									.fillMaxSize()
 									.wrapContentSize(Alignment.Center),
-								style = MaterialTheme.typography.labelMedium,
+								style = MaterialTheme.typography.labelLarge,
 								textAlign = TextAlign.Center,
 								color = MaterialTheme.colorScheme.onSurfaceVariant
 							)
@@ -184,26 +186,61 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 						}
 					}
 					state?.isSuccess == true || searchResults.isNotEmpty() -> {
-						items(searchResults.size) { index ->
-							MultiSearchResultCard(result = searchResults[index])
-						}
-						if (isLoading || state?.isLoading == true) {
+						if (searchResults.isEmpty() && query.isNotBlank()) {
 							item {
-								Column(
+								Text(
+									text = AnnotatedString.Builder().apply {
+										append("No results found ")
+										withStyle(SpanStyle(fontSize = 18.sp)) { append("☹") }
+										append(".")
+									}.toAnnotatedString(),
 									modifier = Modifier
-										.fillMaxWidth()
-										.height(80.dp),
-									horizontalAlignment = Alignment.CenterHorizontally
-								) {
-									CircularProgressIndicator(
-										modifier = Modifier
-											.size(20.dp)
-									)
-								}
+										.fillMaxSize()
+										.wrapContentSize(Alignment.Center),
+									style = MaterialTheme.typography.labelLarge,
+									textAlign = TextAlign.Center,
+									color = MaterialTheme.colorScheme.onSurfaceVariant
+								)
 							}
 						} else {
-							item {
-								Spacer(modifier = Modifier.height(80.dp))
+							itemsIndexed(searchResults) { index, item ->
+								val cardId = index
+								MultiSearchResultCard(
+									cardId = cardId,
+									result = item,
+									isActive = activeCardId == cardId,
+									onCardClick = { clicked ->
+										activeCardId = if (activeCardId == clicked) null else clicked
+									},
+									onAddActionClick = { },
+									onDetailActionClick = {
+										navController.navigate(
+											MediaDetailsScreen(
+												mediaId = item.id,
+												mediaType = item.mediaType ?: "movie"
+											)
+										)
+									}
+								)
+							}
+							if (isLoading || state?.isLoading == true) {
+								item {
+									Column(
+										modifier = Modifier
+											.fillMaxWidth()
+											.height(80.dp),
+										horizontalAlignment = Alignment.CenterHorizontally
+									) {
+										CircularProgressIndicator(
+											modifier = Modifier
+												.size(20.dp)
+										)
+									}
+								}
+							} else {
+								item {
+									Spacer(modifier = Modifier.height(80.dp))
+								}
 							}
 						}
 					}
@@ -244,116 +281,5 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 				containerColor = Color.Transparent,
 			)
 		)
-	}
-}
-
-@Composable
-fun MultiSearchResultCard(result: MultiSearchResponseModel.MultiResult) {
-	OutlinedCard(
-		modifier = Modifier
-			.fillMaxWidth()
-			.padding(vertical = 4.dp),
-		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.surfaceContainer,
-			contentColor = MaterialTheme.colorScheme.onSurface
-		),
-		border = BorderStroke(
-			0.5.dp,
-			MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-		),
-		shape = RoundedCornerShape(16.dp)
-	) {
-		Row(
-			modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
-		) {
-			// Poster on the left
-			Box(
-				modifier = Modifier
-					.padding(6.dp)
-					.width(64.dp)
-					.aspectRatio(2f / 3f)
-					.background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(12.dp))
-					.clip(shape = RoundedCornerShape(12.dp)),
-				contentAlignment = Alignment.Center
-			) {
-				AsyncImage(
-					model = ImageRequest.Builder(LocalPlatformContext.current)
-						.data("https://image.tmdb.org/t/p/w500${result.posterPath}")
-						.crossfade(true)
-						.precision(Precision.INEXACT)
-						.build(),
-					contentDescription = result.title ?: result.name,
-					modifier = Modifier.fillMaxSize(),
-					contentScale = ContentScale.Crop
-				)
-			}
-			// Information on the right
-			Column(
-				modifier = Modifier
-					.fillMaxHeight()
-					.padding(vertical = 10.dp)
-					.padding(start = 8.dp, end = 10.dp)
-			) {
-				Text(
-					text = (if (result.mediaType == "movie") result.title else result.name) ?: "No Title",
-					style = MaterialTheme.typography.titleSmall,
-					color = MaterialTheme.colorScheme.onSurface,
-					minLines = 1,
-					maxLines = 2,
-					overflow = TextOverflow.Ellipsis
-				)
-				Spacer(modifier = Modifier.height(4.dp))
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					verticalAlignment = Alignment.CenterVertically
-				) {
-					Text(
-						modifier = Modifier,
-						text = (if (result.mediaType == "movie") result.releaseDate else result.firstAirDate)?.take(
-							4
-						) ?: NA,
-						style = MaterialTheme.typography.labelMedium,
-						color = MaterialTheme.colorScheme.onSurfaceVariant
-					)
-				}
-				Spacer(modifier = Modifier.weight(1f))
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					verticalAlignment = Alignment.CenterVertically
-				) {
-					Icon(
-						imageVector = Icons.Default.Star,
-						contentDescription = "Rating",
-						modifier = Modifier.size(16.dp),
-						tint = MaterialTheme.extraColors.ratingGold
-					)
-					Spacer(modifier = Modifier.width(4.dp))
-					Text(
-						text = if (result.voteAverage != null) "${round(result.voteAverage * 10) / 10}" else NA,
-						style = MaterialTheme.typography.labelMedium
-					)
-					Spacer(modifier = Modifier.weight(1f))
-					Badge(
-						modifier = Modifier,
-						containerColor =
-							if (result.mediaType == "movie") MaterialTheme.colorScheme.primaryContainer.copy(0.8f)
-							else MaterialTheme.colorScheme.tertiaryContainer.copy(0.8f),
-						contentColor =
-							if (result.mediaType == "movie") MaterialTheme.colorScheme.primary
-							else MaterialTheme.colorScheme.tertiary
-					) {
-						Text(
-							text = when (result.mediaType) {
-								"movie" -> "Movie"
-								"tv" -> "TV Series"
-								else -> NA
-							},
-							style = MaterialTheme.typography.labelMedium,
-							modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-						)
-					}
-				}
-			}
-		}
 	}
 }

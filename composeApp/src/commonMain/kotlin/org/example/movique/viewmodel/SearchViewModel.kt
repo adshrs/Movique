@@ -35,6 +35,12 @@ class SearchViewModel(
 			_searchResults.value = emptyList()
 			return
 		}
+
+		// Avoid unnecessary refetch when same query already loaded
+		if (!append && query == currentQuery && _searchResults.value.isNotEmpty()) {
+			return
+		}
+
 		if (page > totalPages) return
 
 		viewModelScope.launch {

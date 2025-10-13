@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.FlowPreview
@@ -90,66 +91,83 @@ fun MediaDetailsScreen(
 		}
 	}
 
-	Box(Modifier.fillMaxHeight()) {
-		// Screen Content
-		Scaffold {
-			Column(
-				modifier = Modifier
-					.fillMaxSize()
-					.verticalScroll(listState),
-				horizontalAlignment = Alignment.CenterHorizontally,
-				verticalArrangement = Arrangement.Top
+	Box(Modifier.fillMaxSize()) {
+		if (isLoading) {
+			Scaffold(
+				modifier = Modifier.fillMaxSize()
 			) {
-				Spacer(Modifier.height(96.dp))
-				Spacer(Modifier.height(84.dp))
-			}
-		}
-
-		// Top Bar
-		TopAppBar(
-			modifier = Modifier
-				.height(80.dp)
-				.background(
-					Brush.verticalGradient(
-						listOf(
-							BottomAppBarDefaults.containerColor,
-							BottomAppBarDefaults.containerColor.copy(0.9f)
-						)
-					)
-				),
-			title = {
 				Box(
-					modifier = Modifier.fillMaxHeight(),
-					contentAlignment = Alignment.Center
+					modifier = Modifier.fillMaxSize()
 				) {
-					Text(
-						text = when {
-							mediaType == "movie" -> movie?.title ?: ""
-							mediaType == "tv" -> tvSeries?.name ?: ""
-							else -> ""
-						},
-						style = MaterialTheme.typography.titleLarge,
-						color = MaterialTheme.colorScheme.onSurface
+					CircularProgressIndicator(
+						modifier = Modifier.size(20.dp).align(Alignment.Center),
+						color = MaterialTheme.colorScheme.primary
 					)
 				}
-			},
-			navigationIcon = {
-				Box(
-					modifier = Modifier.fillMaxHeight(),
-					contentAlignment = Alignment.Center
+			}
+		} else {
+			// Screen Content
+			Scaffold {
+				Column(
+					modifier = Modifier
+						.fillMaxSize()
+						.verticalScroll(listState),
+					horizontalAlignment = Alignment.CenterHorizontally,
+					verticalArrangement = Arrangement.Top
 				) {
-					IconButton(onClick = { navController.popBackStack() }) {
-						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-							contentDescription = "Back",
-							tint = MaterialTheme.colorScheme.onSurface
+					Spacer(Modifier.height(96.dp))
+					Spacer(Modifier.height(84.dp))
+				}
+			}
+
+			// Top Bar
+			TopAppBar(
+				modifier = Modifier
+					.height(80.dp)
+					.background(
+						Brush.verticalGradient(
+							listOf(
+								BottomAppBarDefaults.containerColor,
+								BottomAppBarDefaults.containerColor.copy(0.9f)
+							)
+						)
+					),
+				title = {
+					Box(
+						modifier = Modifier.fillMaxHeight(),
+						contentAlignment = Alignment.Center
+					) {
+						Text(
+							text = when (mediaType) {
+								"movie" -> movie?.title ?: "Movie Title"
+								"tv" -> tvSeries?.name ?: "Tv Series Title"
+								else -> ""
+							},
+							style = MaterialTheme.typography.titleLarge,
+							color = MaterialTheme.colorScheme.onSurface,
+							maxLines = 1,
+							overflow = TextOverflow.Ellipsis
 						)
 					}
-				}
-			},
-			colors = TopAppBarDefaults.topAppBarColors(
-				containerColor = Color.Transparent
+				},
+				navigationIcon = {
+					Box(
+						modifier = Modifier.fillMaxHeight(),
+						contentAlignment = Alignment.Center
+					) {
+						IconButton(onClick = { navController.popBackStack() }) {
+							Icon(
+								imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+								contentDescription = "Back",
+								tint = MaterialTheme.colorScheme.onSurface
+							)
+						}
+					}
+				},
+				colors = TopAppBarDefaults.topAppBarColors(
+					containerColor = Color.Transparent
+				)
 			)
-		)
+		}
 	}
 }

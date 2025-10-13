@@ -61,6 +61,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -106,8 +107,10 @@ fun HomeScreen(
 	val getTrendingThisWeek = homeViewModel.getTrendingThisWeek.collectAsState()
 	val trending = (getTrendingThisWeek.value as? Result.Success)?.data?.results ?: emptyList()
 	val isLoading by homeViewModel.isLoading.collectAsState()
+	var activeCardId by rememberSaveable { mutableStateOf<Int?>(null) }
 
 	LaunchedEffect(Unit) {
+		activeCardId = null
 		if ((homeViewModel.getPopularMovies.value as? Result.Success)?.data?.results.isNullOrEmpty()) {
 			homeViewModel.fetchPopularMovies()
 		}
@@ -118,8 +121,6 @@ fun HomeScreen(
 			homeViewModel.fetchTrendingThisWeek()
 		}
 	}
-
-	var activeCardId by remember { mutableStateOf<Int?>(null) }
 
 	Box(
 		modifier = Modifier.fillMaxSize()
@@ -301,7 +302,7 @@ fun HomeScreen(
 										onDetailActionClick = {
 											navController.navigate(
 												MediaDetailsScreen(
-													mediaId = item.id ?: 0,
+													mediaId = item.id,
 													mediaType = "tv"
 												)
 											)
