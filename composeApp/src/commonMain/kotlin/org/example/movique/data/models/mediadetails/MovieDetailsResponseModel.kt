@@ -9,8 +9,8 @@ data class MovieDetailsResponseModel(
     val adult: Boolean? = false,
     @SerialName("backdrop_path")
     val backdropPath: String? = "",
-//    @SerialName("belongs_to_collection")
-//    val belongsToCollection: String? = "",
+    @SerialName("belongs_to_collection")
+    val belongsToCollection: BelongsToCollection? = BelongsToCollection(),
     @SerialName("budget")
     val budget: Int? = 0,
     @SerialName("genres")
@@ -38,7 +38,7 @@ data class MovieDetailsResponseModel(
     @SerialName("release_date")
     val releaseDate: String? = "",
     @SerialName("revenue")
-    val revenue: Int? = 0,
+    val revenue: Long? = 0,
     @SerialName("runtime")
     val runtime: Int? = 0,
     @SerialName("spoken_languages")
@@ -54,8 +54,22 @@ data class MovieDetailsResponseModel(
     @SerialName("vote_average")
     val voteAverage: Double? = 0.0,
     @SerialName("vote_count")
-    val voteCount: Int? = 0
+    val voteCount: Int? = 0,
+    @SerialName("credits")
+    val credits: Credits? = Credits()
 ) {
+    @Serializable
+    data class BelongsToCollection(
+        @SerialName("id")
+        val id: Int? = 0,
+        @SerialName("name")
+        val name: String? = "",
+        @SerialName("poster_path")
+        val posterPath: String? = "",
+        @SerialName("backdrop_path")
+        val backdropPath: String? = ""
+    )
+
     @Serializable
     data class Genre(
         @SerialName("id")
@@ -93,4 +107,66 @@ data class MovieDetailsResponseModel(
         @SerialName("name")
         val name: String? = ""
     )
+
+    @Serializable
+    data class Credits(
+        @SerialName("cast")
+        val cast: List<Cast?>? = listOf(),
+        @SerialName("crew")
+        val crew: List<Crew?>? = listOf()
+    ) {
+        @Serializable
+        data class Cast(
+            @SerialName("adult")
+            val adult: Boolean? = false,
+            @SerialName("gender")
+            val gender: Int? = 0,
+            @SerialName("id")
+            val id: Int? = 0,
+            @SerialName("known_for_department")
+            val knownForDepartment: String? = "",
+            @SerialName("name")
+            val name: String? = "",
+            @SerialName("original_name")
+            val originalName: String? = "",
+            @SerialName("popularity")
+            val popularity: Double? = 0.0,
+            @SerialName("profile_path")
+            val profilePath: String? = "",
+            @SerialName("cast_id")
+            val castId: Int? = 0,
+            @SerialName("character")
+            val character: String? = "",
+            @SerialName("credit_id")
+            val creditId: String? = "",
+            @SerialName("order")
+            val order: Int? = 0
+        )
+
+        @Serializable
+        data class Crew(
+            @SerialName("adult")
+            val adult: Boolean? = false,
+            @SerialName("gender")
+            val gender: Int? = 0,
+            @SerialName("id")
+            val id: Int? = 0,
+            @SerialName("known_for_department")
+            val knownForDepartment: String? = "",
+            @SerialName("name")
+            val name: String? = "",
+            @SerialName("original_name")
+            val originalName: String? = "",
+            @SerialName("popularity")
+            val popularity: Double? = 0.0,
+            @SerialName("profile_path")
+            val profilePath: String? = "",
+            @SerialName("credit_id")
+            val creditId: String? = "",
+            @SerialName("department")
+            val department: String? = "",
+            @SerialName("job")
+            val job: String? = ""
+        )
+    }
 }

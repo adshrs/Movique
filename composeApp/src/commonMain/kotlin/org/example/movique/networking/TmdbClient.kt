@@ -26,6 +26,7 @@ class TmdbClient(
 		val response = try {
 			httpClient.get("${baseUrl}tv/$id") {
 				parameter("api_key", apiKey)
+				parameter("append_to_response", "credits")
 				parameter("language", "en-US")
 			}
 		} catch (e: UnresolvedAddressException) {
@@ -52,6 +53,7 @@ class TmdbClient(
 		val response = try {
 			httpClient.get("${baseUrl}movie/$id") {
 				parameter("api_key", apiKey)
+				parameter("append_to_response", "credits")
 				parameter("language", "en-US")
 			}
 		} catch (e: UnresolvedAddressException) {
