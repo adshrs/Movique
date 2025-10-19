@@ -16,11 +16,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -37,10 +39,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,10 +92,14 @@ import org.example.movique.data.models.mediadetails.MovieDetailsResponseModel
 import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.theme.extraColors
 import org.example.movique.theme.isSystemInDarkTheme
+import org.example.movique.theme.titleRegular
+import org.example.movique.ui.components.badge.MediaTypeBadge
 import org.example.movique.ui.components.card.MediaCard
 import org.example.movique.util.Result
 import org.example.movique.util.Result.Loading.isLoading
 import org.example.movique.util.tools.Constants.NA
+import org.example.movique.util.tools.toHourMinuteFormat
+import org.example.movique.util.tools.toSeasonText
 import org.example.movique.viewmodel.MediaDetailsViewModel
 import org.example.movique.viewmodel.MediaListViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -166,7 +175,6 @@ fun MediaDetailsScreen(
 					Box(
 						modifier = Modifier
 							.fillMaxWidth()
-							.aspectRatio(16f / 13.5f)
 					) {
 						// Backdrop
 						Box(
@@ -215,156 +223,273 @@ fun MediaDetailsScreen(
 							)
 						}
 						// Poster and main info
-						Row(
+						Box(
 							modifier = Modifier
 								.fillMaxWidth()
 								.align(Alignment.BottomCenter)
-								.padding(horizontal = 16.dp),
-							verticalAlignment = Alignment.Top
+								.padding(WindowInsets.statusBars.asPaddingValues())
 						) {
-							// Poster Image
-							OutlinedCard(
+							Column(
 								modifier = Modifier
-									.width(112.dp)
-									.clickable(
-										indication = null,
-										interactionSource = null,
-										onClick = { }
-									),
-								colors = CardDefaults.cardColors(
-									containerColor = MaterialTheme.colorScheme.surfaceContainer,
-									contentColor = MaterialTheme.colorScheme.onSurface
-								),
-								border = BorderStroke(
-									1.dp,
-									MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
-								)
+									.fillMaxWidth()
+									.align(Alignment.BottomCenter)
+									.padding(top = 104.dp)
+									.padding(horizontal = 16.dp)
 							) {
-								Box(
-									modifier = Modifier
-										.fillMaxWidth()
-										.aspectRatio(2f / 3f)
-										.background(MaterialTheme.colorScheme.surfaceVariant),
-									contentAlignment = Alignment.Center
+								Card(
+									modifier = Modifier.fillMaxWidth(),
+									colors = CardDefaults.cardColors(
+										containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(0.4f),
+										contentColor = MaterialTheme.colorScheme.onSurface
+									)
 								) {
-									AsyncImage(
-										model = ImageRequest.Builder(LocalPlatformContext.current)
-											.data(
-												"https://image.tmdb.org/t/p/w500${
-													when (mediaType) {
-														"movie" -> movie?.posterPath
-														"tv" -> tvSeries?.posterPath
-														else -> null
-													}
-												}"
+									Row(
+										modifier = Modifier
+											.fillMaxWidth()
+											.padding(horizontal = 4.dp, vertical = 4.dp),
+										verticalAlignment = Alignment.CenterVertically
+									) {
+										val releaseDate = when (mediaType) {
+											"movie" -> movie?.releaseDate
+											"tv" -> tvSeries?.firstAirDate
+											else -> null
+										}
+										val runtime = when (mediaType) {
+											"movie" -> movie?.runtime
+											"tv" -> tvSeries?.numberOfSeasons
+											else -> null
+										}
+										val rating = when (mediaType) {
+											"movie" -> movie?.voteAverage
+											"tv" -> tvSeries?.voteAverage
+											else -> null
+										}
+										MediaTypeBadge(mediaType = mediaType, textStyle = MaterialTheme.typography.labelLarge)
+										if (!releaseDate.isNullOrEmpty()) {
+											Row(
+												verticalAlignment = Alignment.CenterVertically
+											) {
+												Text(
+													text = "  •  ",
+													style = MaterialTheme.typography.labelLarge
+												)
+												Icon(
+													imageVector = Icons.Default.CalendarToday,
+													contentDescription = "Release Date",
+													modifier = Modifier.size(12.dp)
+												)
+												Spacer(modifier = Modifier.width(4.dp))
+												Text(
+													text = releaseDate.take(4),
+													style = MaterialTheme.typography.labelLarge,
+												)
+											}
+										}
+										runtime?.let {
+											Row(
+												verticalAlignment = Alignment.CenterVertically
+											) {
+												Text(
+													text = "  •  ",
+													style = MaterialTheme.typography.labelLarge
+												)
+												Icon(
+													imageVector = Icons.Default.Schedule,
+													contentDescription = "Runtime",
+													modifier = Modifier.size(14.dp)
+												)
+												Spacer(modifier = Modifier.width(4.dp))
+												Text(
+													modifier = Modifier,
+													text = when (mediaType) {
+														"movie" -> runtime.toHourMinuteFormat()
+														"tv" -> runtime.toSeasonText()
+														else -> NA
+													},
+													style = MaterialTheme.typography.labelLarge
+												)
+											}
+											Spacer(modifier = Modifier.width(8.dp))
+										}
+										Spacer(Modifier.weight(1f))
+										Badge(
+											containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(1f),
+											contentColor = MaterialTheme.colorScheme.onSurface
+										) {
+											Row(
+												modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+												verticalAlignment = Alignment.CenterVertically
+											) {
+												Icon(
+													imageVector = Icons.Default.Star,
+													contentDescription = "Rating",
+													modifier = Modifier.size(14.dp),
+													tint = MaterialTheme.extraColors.ratingGold
+												)
+												Spacer(modifier = Modifier.width(4.dp))
+												Text(
+													modifier = Modifier,
+													text = if (rating != null) "${round(rating * 10) / 10}" else NA,
+													style = MaterialTheme.typography.labelLarge
+												)
+											}
+										}
+									}
+								}
+
+								Spacer(modifier = Modifier.height(8.dp))
+
+								Row(
+									modifier = Modifier.fillMaxWidth(),
+									verticalAlignment = Alignment.Top
+								) {
+									// Poster Image
+									OutlinedCard(
+										modifier = Modifier
+											.width(112.dp)
+											.clickable(
+												indication = null,
+												interactionSource = null,
+												onClick = { }
+											),
+										colors = CardDefaults.cardColors(
+											containerColor = MaterialTheme.colorScheme.surfaceContainer,
+											contentColor = MaterialTheme.colorScheme.onSurface
+										),
+										border = BorderStroke(
+											1.dp,
+											MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
+										)
+									) {
+										Box(
+											modifier = Modifier
+												.fillMaxWidth()
+												.aspectRatio(2f / 3f)
+												.background(MaterialTheme.colorScheme.surfaceVariant),
+											contentAlignment = Alignment.Center
+										) {
+											AsyncImage(
+												model = ImageRequest.Builder(LocalPlatformContext.current)
+													.data(
+														"https://image.tmdb.org/t/p/w500${
+															when (mediaType) {
+																"movie" -> movie?.posterPath
+																"tv" -> tvSeries?.posterPath
+																else -> null
+															}
+														}"
+													)
+													.crossfade(true)
+													.precision(Precision.INEXACT)
+													.build(),
+												contentDescription = when (mediaType) {
+													"movie" -> movie?.title
+													"tv" -> tvSeries?.name
+													else -> ""
+												},
+												modifier = Modifier
+													.fillMaxSize(),
+												contentScale = ContentScale.Crop,
 											)
-											.crossfade(true)
-											.precision(Precision.INEXACT)
-											.build(),
-										contentDescription = when (mediaType) {
+										}
+									}
+
+									Spacer(Modifier.width(20.dp))
+
+									// Main Info
+									Column(
+										modifier = Modifier.weight(1f),
+										verticalArrangement = Arrangement.spacedBy(4.dp)
+									) {
+										val title = when (mediaType) {
 											"movie" -> movie?.title
 											"tv" -> tvSeries?.name
-											else -> ""
-										},
-										modifier = Modifier
-											.fillMaxSize(),
-										contentScale = ContentScale.Crop,
+											else -> null
+										}
+										val originalTitle = when (mediaType) {
+											"movie" -> movie?.originalTitle
+											"tv" -> tvSeries?.originalName
+											else -> null
+										}
+										val releaseDate = when (mediaType) {
+											"movie" -> movie?.releaseDate
+											"tv" -> tvSeries?.firstAirDate
+											else -> null
+										}
+										val directors = when (mediaType) {
+											"movie" -> movie?.credits?.crew
+												?.filter { it?.job == "Director" }
+												?.mapNotNull { it?.name } ?: emptyList()
+
+											"tv" -> tvSeries?.credits?.crew
+												?.filter { it?.job == "Director" || it?.job == "Series Director" }
+												?.mapNotNull { it?.name } ?: emptyList()
+
+											else -> emptyList()
+										}
+
+										Text(
+											text = title ?: "",
+											style = MaterialTheme.typography.titleRegular,
+											color = MaterialTheme.colorScheme.onSurface,
+										)
+										if (!originalTitle.isNullOrEmpty() && originalTitle != title) {
+											Text(
+												text = originalTitle,
+												style = MaterialTheme.typography.labelMedium,
+												fontStyle = FontStyle.Italic,
+												color = MaterialTheme.colorScheme.primary,
+											)
+										}
+										if (!releaseDate.isNullOrEmpty()) {
+											Text(
+												text = releaseDate.take(4) + if (!directors.isEmpty()) {
+													"  •  " + "DIRECTED BY"
+												} else "",
+												style = MaterialTheme.typography.labelLarge,
+												color = MaterialTheme.colorScheme.primary,
+											)
+										}
+										if (directors.isNotEmpty()) {
+											Text(
+												text = directors.joinToString(", "),
+												style = MaterialTheme.typography.labelLarge,
+												color = MaterialTheme.colorScheme.primary,
+											)
+										}
+									}
+								}
+
+								Spacer(modifier = Modifier.height(20.dp))
+
+								val tagline = when (mediaType) {
+									"movie" -> movie?.tagline
+									"tv" -> tvSeries?.tagline
+									else -> null
+								}
+								val overview = when (mediaType) {
+									"movie" -> movie?.overview ?: "No overview available."
+									"tv" -> tvSeries?.overview ?: "No overview available."
+									else -> "No overview available."
+								}
+
+								if (!tagline.isNullOrEmpty()) {
+									Text(
+										text = tagline,
+										style = MaterialTheme.typography.labelLarge,
 									)
+									Spacer(modifier = Modifier.height(8.dp))
 								}
-							}
-
-							Spacer(Modifier.width(20.dp))
-
-							// Main Info
-							Column(
-								modifier = Modifier.weight(1f),
-								verticalArrangement = Arrangement.spacedBy(4.dp)
-							) {
-								val title = when (mediaType) {
-									"movie" -> movie?.title
-									"tv" -> tvSeries?.name
-									else -> null
-								}
-								val originalTitle = when (mediaType) {
-									"movie" -> movie?.originalTitle
-									"tv" -> tvSeries?.originalName
-									else -> null
-								}
-								val releaseDate = when (mediaType) {
-									"movie" -> movie?.releaseDate
-									"tv" -> tvSeries?.firstAirDate
-									else -> null
-								}
-								val directors = when (mediaType) {
-									"movie" -> movie?.credits?.crew
-										?.filter { it?.job == "Director" }
-										?.mapNotNull { it?.name } ?: emptyList()
-
-									"tv" -> tvSeries?.credits?.crew
-										?.filter { it?.job == "Director" || it?.job == "Series Director" }
-										?.mapNotNull { it?.name } ?: emptyList()
-
-									else -> emptyList()
-								}
-
 								Text(
-									text = title ?: "",
-									style = MaterialTheme.typography.titleLarge,
-									color = MaterialTheme.colorScheme.onSurface,
+									text = overview,
+									style = MaterialTheme.typography.bodyMedium,
 								)
-								if (!originalTitle.isNullOrEmpty() && originalTitle != title) {
-									Text(
-										text = originalTitle,
-										style = MaterialTheme.typography.labelLarge,
-										fontStyle = FontStyle.Italic,
-										color = MaterialTheme.colorScheme.onSurface,
-									)
-								}
-								if (!releaseDate.isNullOrEmpty()) {
-									Text(
-										text = releaseDate.take(4) + if (!directors.isEmpty()) {
-											"  •  " + "DIRECTED BY"
-										} else "",
-										style = MaterialTheme.typography.labelLarge,
-										color = MaterialTheme.colorScheme.onSurface,
-									)
-								}
-								if (directors.isNotEmpty()) {
-									Text(
-										text = directors.joinToString(", "),
-										style = MaterialTheme.typography.labelLarge,
-										color = MaterialTheme.colorScheme.onSurface,
-									)
-								}
-
-								Badge(
-									modifier = Modifier.padding(top = 4.dp),
-									containerColor =
-										if (mediaType == "movie")
-											MaterialTheme.colorScheme.primaryContainer.copy(0.9f)
-										else
-											MaterialTheme.colorScheme.tertiaryContainer.copy(0.9f),
-									contentColor =
-										if (mediaType == "movie")
-											Color.White.copy(0.8f)
-										else
-											Color.White.copy(0.8f)
-								) {
-									Text(
-										text = when (mediaType) {
-											"movie" -> "Movie"
-											"tv" -> "TV Series"
-											else -> NA
-										},
-										style = MaterialTheme.typography.labelMedium,
-										modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-									)
-								}
 							}
 						}
 					}
 					Spacer(Modifier.height(1000.dp))
-					Spacer(Modifier.height(84.dp))
+					Spacer(Modifier.height(76.dp))
+					Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
 				}
 			}
 

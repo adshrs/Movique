@@ -136,6 +136,16 @@ fun moviqueTypography(): Typography {
 	)
 }
 
+val Typography.titleRegular: TextStyle
+	@Composable
+	get() = TextStyle(
+		fontFamily = Poppins,
+		fontWeight = FontWeight.SemiBold,
+		fontSize = 19.sp,
+		lineHeight = 26.sp,
+		letterSpacing = 0.1.sp
+	)
+
 val Poppins @Composable get() = FontFamily(
 	Font(Res.font.Poppins_Regular, FontWeight.Normal),
 	Font(Res.font.Poppins_Medium, FontWeight.Medium),

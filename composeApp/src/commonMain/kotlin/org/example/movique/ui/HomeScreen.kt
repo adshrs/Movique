@@ -22,13 +22,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -130,7 +135,12 @@ fun HomeScreen(
 			LazyColumn(
 				modifier = Modifier.fillMaxSize()
 			) {
-				item { Spacer(modifier = Modifier.height(96.dp)) }
+				item {
+					Spacer(modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues()))
+				}
+				item {
+					Spacer(modifier = Modifier.height(72.dp))
+				}
 				// Popular Movies Section
 				item {
 					Column(
@@ -412,7 +422,12 @@ fun HomeScreen(
 						}
 					}
 				}
-				item { Spacer(modifier = Modifier.height(84.dp)) }
+				item {
+					Spacer(modifier = Modifier.height(76.dp))
+				}
+				item {
+					Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
+				}
 			}
 		}
 

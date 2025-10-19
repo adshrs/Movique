@@ -45,6 +45,7 @@ import coil3.request.crossfade
 import coil3.size.Precision
 import kotlinx.coroutines.NonCancellable.isActive
 import org.example.movique.theme.extraColors
+import org.example.movique.ui.components.badge.MediaTypeBadge
 import org.example.movique.util.tools.Constants.NA
 import kotlin.math.round
 
@@ -112,29 +113,10 @@ fun MediaCard(
 						contentScale = ContentScale.Crop,
 					)
 					if (mediaTypeEnabled) {
-						Badge(
+						MediaTypeBadge(
 							modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
-							containerColor =
-								if (mediaType == "movie")
-									MaterialTheme.colorScheme.primaryContainer.copy(0.9f)
-								else
-									MaterialTheme.colorScheme.tertiaryContainer.copy(0.9f),
-							contentColor =
-								if (mediaType == "movie")
-									Color.White.copy(0.8f)
-								else
-									Color.White.copy(0.8f)
-						) {
-							Text(
-								text = when (mediaType) {
-									"movie" -> "Movie"
-									"tv" -> "TV Series"
-									else -> NA
-								},
-								style = MaterialTheme.typography.labelMedium,
-								modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-							)
-						}
+							mediaType = mediaType
+						)
 					}
 				}
 
