@@ -3,15 +3,27 @@
 package org.example.movique.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOut
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,25 +47,41 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -69,11 +97,18 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter.Companion.tint
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -95,9 +130,13 @@ import org.example.movique.theme.isSystemInDarkTheme
 import org.example.movique.theme.titleRegular
 import org.example.movique.ui.components.badge.MediaTypeBadge
 import org.example.movique.ui.components.card.MediaCard
+import org.example.movique.ui.components.chip.GenreChip
+import org.example.movique.ui.components.mediadetailssection.MediaBackdrop
+import org.example.movique.ui.components.mediadetailssection.MediaMainInfoSection
 import org.example.movique.util.Result
 import org.example.movique.util.Result.Loading.isLoading
 import org.example.movique.util.tools.Constants.NA
+import org.example.movique.util.tools.smoothCinematicVerticalGradientBrush
 import org.example.movique.util.tools.toHourMinuteFormat
 import org.example.movique.util.tools.toSeasonText
 import org.example.movique.viewmodel.MediaDetailsViewModel
@@ -120,13 +159,23 @@ fun MediaDetailsScreen(
 	val tvSeries = (getTvSeriesDetails.value as? Result.Success)?.data
 	val listState = rememberScrollState()
 	val scope = rememberCoroutineScope()
+	val localDensity = LocalDensity.current
 
+	val topBarHeightPx = with(localDensity) { 20.dp.toPx() }
+	val statusBarPx = with(localDensity) { WindowInsets.statusBars.getTop(localDensity).toFloat() }
+	val topTriggerPx = statusBarPx + topBarHeightPx
+
+	var titleTopPx by remember { mutableStateOf(Float.POSITIVE_INFINITY) } // measured in window co-ordinates
 	var showTopBar by remember { mutableStateOf(false) }
 
-	// Detect scroll to show/hide TopAppBar
+	// Show Top Bar Logic (Show only when scroll reaches the media title text)
 	LaunchedEffect(listState) {
-		snapshotFlow { listState.value }
-			.map { it > 1 } // show TopAppBar after scrolling 50px
+		snapshotFlow { titleTopPx to listState.value }
+			.map { (titleY, _) ->
+				// When title's top is at or above the trigger Y, show top bar
+				// add small fudge (e.g. 2 px) if needed
+				titleY.isFinite() && titleY <= topTriggerPx + 2f
+			}
 			.distinctUntilChanged()
 			.collect { showTopBar = it }
 	}
@@ -150,6 +199,7 @@ fun MediaDetailsScreen(
 
 	Box(Modifier.fillMaxSize()) {
 		if (isLoading) {
+			// Loading Indicator
 			Scaffold(
 				modifier = Modifier.fillMaxSize()
 			) {
@@ -165,51 +215,22 @@ fun MediaDetailsScreen(
 		} else {
 			// Screen Content
 			Scaffold {
-				Column(
-					modifier = Modifier
-						.fillMaxSize()
-						.verticalScroll(listState),
-					horizontalAlignment = Alignment.CenterHorizontally,
-					verticalArrangement = Arrangement.Top
+				Box(
+					modifier = Modifier.fillMaxSize()
 				) {
+					// Backdrop
+					MediaBackdrop(mediaType, movie, tvSeries)
 					Box(
 						modifier = Modifier
-							.fillMaxWidth()
+							.fillMaxSize()
+							.verticalScroll(listState)
 					) {
-						// Backdrop
-						Box(
-							modifier = Modifier
-								.fillMaxWidth().aspectRatio(16f / 9f),
-							contentAlignment = Alignment.Center
-						) {
-							// Backdrop Image
-							AsyncImage(
-								model = ImageRequest.Builder(LocalPlatformContext.current)
-									.data(
-										"https://image.tmdb.org/t/p/original${
-											when (mediaType) {
-												"movie" -> movie?.backdropPath
-												"tv" -> tvSeries?.backdropPath
-												else -> null
-											}
-										}"
-									)
-									.crossfade(true)
-									.precision(Precision.INEXACT)
-									.build(),
-								contentDescription = when (mediaType) {
-									"movie" -> movie?.title
-									"tv" -> tvSeries?.name
-									else -> ""
-								},
-								modifier = Modifier
-									.fillMaxSize(),
-								contentScale = ContentScale.Crop,
-							)
-							// Backdrop gradient overlay
+						// Backdrop gradient overlay
+						Column(modifier = Modifier.matchParentSize()) {
 							Box(
 								modifier = Modifier
-									.fillMaxSize()
+									.fillMaxWidth()
+									.aspectRatio(16f / 9f)
 									.background(
 										smoothCinematicVerticalGradientBrush(
 											baseColor = MaterialTheme.colorScheme.background,
@@ -221,275 +242,48 @@ fun MediaDetailsScreen(
 										)
 									)
 							)
-						}
-						// Poster and main info
-						Box(
-							modifier = Modifier
-								.fillMaxWidth()
-								.align(Alignment.BottomCenter)
-								.padding(WindowInsets.statusBars.asPaddingValues())
-						) {
-							Column(
+							Box(
 								modifier = Modifier
 									.fillMaxWidth()
-									.align(Alignment.BottomCenter)
-									.padding(top = 104.dp)
-									.padding(horizontal = 16.dp)
-							) {
-								Card(
-									modifier = Modifier.fillMaxWidth(),
-									colors = CardDefaults.cardColors(
-										containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(0.4f),
-										contentColor = MaterialTheme.colorScheme.onSurface
-									)
-								) {
-									Row(
-										modifier = Modifier
-											.fillMaxWidth()
-											.padding(horizontal = 4.dp, vertical = 4.dp),
-										verticalAlignment = Alignment.CenterVertically
-									) {
-										val releaseDate = when (mediaType) {
-											"movie" -> movie?.releaseDate
-											"tv" -> tvSeries?.firstAirDate
-											else -> null
-										}
-										val runtime = when (mediaType) {
-											"movie" -> movie?.runtime
-											"tv" -> tvSeries?.numberOfSeasons
-											else -> null
-										}
-										val rating = when (mediaType) {
-											"movie" -> movie?.voteAverage
-											"tv" -> tvSeries?.voteAverage
-											else -> null
-										}
-										MediaTypeBadge(mediaType = mediaType, textStyle = MaterialTheme.typography.labelLarge)
-										if (!releaseDate.isNullOrEmpty()) {
-											Row(
-												verticalAlignment = Alignment.CenterVertically
-											) {
-												Text(
-													text = "  •  ",
-													style = MaterialTheme.typography.labelLarge
-												)
-												Icon(
-													imageVector = Icons.Default.CalendarToday,
-													contentDescription = "Release Date",
-													modifier = Modifier.size(12.dp)
-												)
-												Spacer(modifier = Modifier.width(4.dp))
-												Text(
-													text = releaseDate.take(4),
-													style = MaterialTheme.typography.labelLarge,
-												)
-											}
-										}
-										runtime?.let {
-											Row(
-												verticalAlignment = Alignment.CenterVertically
-											) {
-												Text(
-													text = "  •  ",
-													style = MaterialTheme.typography.labelLarge
-												)
-												Icon(
-													imageVector = Icons.Default.Schedule,
-													contentDescription = "Runtime",
-													modifier = Modifier.size(14.dp)
-												)
-												Spacer(modifier = Modifier.width(4.dp))
-												Text(
-													modifier = Modifier,
-													text = when (mediaType) {
-														"movie" -> runtime.toHourMinuteFormat()
-														"tv" -> runtime.toSeasonText()
-														else -> NA
-													},
-													style = MaterialTheme.typography.labelLarge
-												)
-											}
-											Spacer(modifier = Modifier.width(8.dp))
-										}
-										Spacer(Modifier.weight(1f))
-										Badge(
-											containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(1f),
-											contentColor = MaterialTheme.colorScheme.onSurface
-										) {
-											Row(
-												modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-												verticalAlignment = Alignment.CenterVertically
-											) {
-												Icon(
-													imageVector = Icons.Default.Star,
-													contentDescription = "Rating",
-													modifier = Modifier.size(14.dp),
-													tint = MaterialTheme.extraColors.ratingGold
-												)
-												Spacer(modifier = Modifier.width(4.dp))
-												Text(
-													modifier = Modifier,
-													text = if (rating != null) "${round(rating * 10) / 10}" else NA,
-													style = MaterialTheme.typography.labelLarge
-												)
-											}
-										}
-									}
-								}
+									.weight(1f)
+									.background(MaterialTheme.colorScheme.background)
+							)
+						}
 
-								Spacer(modifier = Modifier.height(8.dp))
+						// Media Info
+						Column(
+							modifier = Modifier.fillMaxWidth()
+						) {
+							Spacer(modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues()))
+							Spacer(modifier = Modifier.padding(top = 104.dp))
+							// Main Info (including Poster, Tagline & Overview)
+							MediaMainInfoSection(
+								modifier = Modifier,
+								mediaType = mediaType,
+								movie = movie,
+								tvSeries = tvSeries,
+								retrieveTitleTopPx = { titleTopPx = it }
+							)
 
-								Row(
-									modifier = Modifier.fillMaxWidth(),
-									verticalAlignment = Alignment.Top
-								) {
-									// Poster Image
-									OutlinedCard(
-										modifier = Modifier
-											.width(112.dp)
-											.clickable(
-												indication = null,
-												interactionSource = null,
-												onClick = { }
-											),
-										colors = CardDefaults.cardColors(
-											containerColor = MaterialTheme.colorScheme.surfaceContainer,
-											contentColor = MaterialTheme.colorScheme.onSurface
-										),
-										border = BorderStroke(
-											1.dp,
-											MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
-										)
-									) {
-										Box(
-											modifier = Modifier
-												.fillMaxWidth()
-												.aspectRatio(2f / 3f)
-												.background(MaterialTheme.colorScheme.surfaceVariant),
-											contentAlignment = Alignment.Center
-										) {
-											AsyncImage(
-												model = ImageRequest.Builder(LocalPlatformContext.current)
-													.data(
-														"https://image.tmdb.org/t/p/w500${
-															when (mediaType) {
-																"movie" -> movie?.posterPath
-																"tv" -> tvSeries?.posterPath
-																else -> null
-															}
-														}"
-													)
-													.crossfade(true)
-													.precision(Precision.INEXACT)
-													.build(),
-												contentDescription = when (mediaType) {
-													"movie" -> movie?.title
-													"tv" -> tvSeries?.name
-													else -> ""
-												},
-												modifier = Modifier
-													.fillMaxSize(),
-												contentScale = ContentScale.Crop,
-											)
-										}
-									}
-
-									Spacer(Modifier.width(20.dp))
-
-									// Main Info
-									Column(
-										modifier = Modifier.weight(1f),
-										verticalArrangement = Arrangement.spacedBy(4.dp)
-									) {
-										val title = when (mediaType) {
-											"movie" -> movie?.title
-											"tv" -> tvSeries?.name
-											else -> null
-										}
-										val originalTitle = when (mediaType) {
-											"movie" -> movie?.originalTitle
-											"tv" -> tvSeries?.originalName
-											else -> null
-										}
-										val releaseDate = when (mediaType) {
-											"movie" -> movie?.releaseDate
-											"tv" -> tvSeries?.firstAirDate
-											else -> null
-										}
-										val directors = when (mediaType) {
-											"movie" -> movie?.credits?.crew
-												?.filter { it?.job == "Director" }
-												?.mapNotNull { it?.name } ?: emptyList()
-
-											"tv" -> tvSeries?.credits?.crew
-												?.filter { it?.job == "Director" || it?.job == "Series Director" }
-												?.mapNotNull { it?.name } ?: emptyList()
-
-											else -> emptyList()
-										}
-
-										Text(
-											text = title ?: "",
-											style = MaterialTheme.typography.titleRegular,
-											color = MaterialTheme.colorScheme.onSurface,
-										)
-										if (!originalTitle.isNullOrEmpty() && originalTitle != title) {
-											Text(
-												text = originalTitle,
-												style = MaterialTheme.typography.labelMedium,
-												fontStyle = FontStyle.Italic,
-												color = MaterialTheme.colorScheme.primary,
-											)
-										}
-										if (!releaseDate.isNullOrEmpty()) {
-											Text(
-												text = releaseDate.take(4) + if (!directors.isEmpty()) {
-													"  •  " + "DIRECTED BY"
-												} else "",
-												style = MaterialTheme.typography.labelLarge,
-												color = MaterialTheme.colorScheme.primary,
-											)
-										}
-										if (directors.isNotEmpty()) {
-											Text(
-												text = directors.joinToString(", "),
-												style = MaterialTheme.typography.labelLarge,
-												color = MaterialTheme.colorScheme.primary,
-											)
-										}
-									}
-								}
-
-								Spacer(modifier = Modifier.height(20.dp))
-
-								val tagline = when (mediaType) {
-									"movie" -> movie?.tagline
-									"tv" -> tvSeries?.tagline
-									else -> null
-								}
-								val overview = when (mediaType) {
-									"movie" -> movie?.overview ?: "No overview available."
-									"tv" -> tvSeries?.overview ?: "No overview available."
-									else -> "No overview available."
-								}
-
-								if (!tagline.isNullOrEmpty()) {
-									Text(
-										text = tagline,
-										style = MaterialTheme.typography.labelLarge,
-									)
-									Spacer(modifier = Modifier.height(8.dp))
-								}
-								Text(
-									text = overview,
-									style = MaterialTheme.typography.bodyMedium,
-								)
-							}
+							Spacer(Modifier.height(1000.dp))
+							Spacer(Modifier.height(76.dp))
+							Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
 						}
 					}
-					Spacer(Modifier.height(1000.dp))
-					Spacer(Modifier.height(76.dp))
-					Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
+
+					// Bottom Action Bar
+					Card(
+						modifier = Modifier
+							.align(Alignment.BottomCenter)
+							.fillMaxWidth()
+							.height(76.dp)
+							.padding(horizontal = 16.dp)
+							.padding(
+								bottom = WindowInsets.statusBars.asPaddingValues().calculateBottomPadding()
+							)
+					) {
+
+					}
 				}
 			}
 
@@ -504,7 +298,12 @@ fun MediaDetailsScreen(
 						modifier = Modifier.fillMaxHeight(),
 						contentAlignment = Alignment.Center
 					) {
-						IconButton(onClick = { navController.popBackStack() }) {
+						IconButton(
+							onClick = { navController.popBackStack() },
+							colors = IconButtonDefaults.iconButtonColors(
+								containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(0.4f),
+							)
+						) {
 							Icon(
 								imageVector = Icons.AutoMirrored.Filled.ArrowBack,
 								contentDescription = "Back",
@@ -521,8 +320,18 @@ fun MediaDetailsScreen(
 			// Animated Top Bar (Icon Buttons + Title)
 			AnimatedVisibility(
 				visible = showTopBar,
-				enter = fadeIn(),
-				exit = fadeOut()
+				enter = fadeIn(
+					animationSpec = tween(durationMillis = 400, easing = LinearOutSlowInEasing)
+				) + slideInVertically(
+					initialOffsetY = { -80 }, // start slightly above the screen
+					animationSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
+				),
+				exit = fadeOut(
+					animationSpec = tween(durationMillis = 300, easing = FastOutLinearInEasing)
+				) + slideOutVertically(
+					targetOffsetY = { -80 }, // slide smoothly upward when disappearing
+					animationSpec = tween(durationMillis = 400, easing = FastOutLinearInEasing)
+				)
 			) {
 				TopAppBar(
 					modifier = Modifier
@@ -546,7 +355,7 @@ fun MediaDetailsScreen(
 									"tv" -> tvSeries?.name ?: "Tv Series Title"
 									else -> ""
 								},
-								style = MaterialTheme.typography.titleLarge,
+								style = MaterialTheme.typography.titleRegular,
 								color = MaterialTheme.colorScheme.onSurface,
 								maxLines = 1,
 								overflow = TextOverflow.Ellipsis
@@ -575,50 +384,3 @@ fun MediaDetailsScreen(
 		}
 	}
 }
-
-@Composable
-fun smoothCinematicVerticalGradientBrush(
-	baseColor: Color = MaterialTheme.colorScheme.background,
-	topAlpha: Float = 0.2f,
-	midAlpha: Float = 0.05f,
-	bottomAlpha: Float = 1f,
-	midPosition: Float = 0.3f,
-	steps: Int = 120
-): Brush {
-	val colors = buildList {
-		for (i in 0 until steps) {
-			val t = i / (steps - 1f)
-
-			// Smooth curve across entire gradient (easeInOut-like)
-			val smoothT = t * t * (3 - 2 * t) // Smoothstep for no sharp rate changes
-
-			// Apply a valley at the midpoint (for that cinematic “depth”)
-			val curve = when {
-				t < midPosition -> {
-					val localT = t / midPosition
-					lerp(topAlpha, midAlpha, localT * localT * (3 - 2 * localT))
-				}
-
-				else -> {
-					val localT = (t - midPosition) / (1 - midPosition)
-					lerp(midAlpha, bottomAlpha, localT * localT * (3 - 2 * localT))
-				}
-			}
-
-			add(baseColor.copy(alpha = curve))
-		}
-
-		// Ensure solid bottom
-		add(baseColor.copy(alpha = bottomAlpha))
-	}
-
-	return Brush.verticalGradient(
-		colors = colors,
-		startY = 0f,
-		endY = Float.POSITIVE_INFINITY
-	)
-}
-
-// helper
-private fun lerp(start: Float, end: Float, fraction: Float): Float =
-	start + (end - start) * fraction
