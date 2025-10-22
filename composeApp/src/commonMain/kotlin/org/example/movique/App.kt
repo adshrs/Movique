@@ -67,7 +67,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -111,11 +113,18 @@ fun MoviqueApp() {
 		val currentBackStackEntry by navController.currentBackStackEntryAsState()
 		val currentRoute = currentBackStackEntry?.destination?.route
 		val isHomeScreen = currentRoute == HomeScreen::class.qualifiedName
-		val showBottomBar = currentRoute != MediaListScreen::class.qualifiedName
+		val showBottomBar = currentRoute?.contains(MediaDetailsScreen::class.qualifiedName ?: "") == false
 		val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 		val scope = rememberCoroutineScope()
 
-		MoviqueAppContent(drawerState, isHomeScreen, scope, navController, currentRoute)
+		MoviqueAppContent(
+			drawerState,
+			isHomeScreen,
+			showBottomBar,
+			scope,
+			navController,
+			currentRoute
+		)
 	}
 }
 
@@ -123,6 +132,7 @@ fun MoviqueApp() {
 private fun MoviqueAppContent(
 	drawerState: DrawerState,
 	isHomeScreen: Boolean,
+	showBottomBar: Boolean,
 	scope: CoroutineScope,
 	navController: NavHostController,
 	currentRoute: String?
@@ -161,68 +171,70 @@ private fun MoviqueAppContent(
 				composable<ProfileScreen> { ProfileScreen(navController, PaddingValues()) }
 				composable<SettingsScreen> { SettingsScreen(navController, PaddingValues()) }
 			}
-			Box(
-				modifier = Modifier
-					.align(Alignment.BottomCenter)
-					.background(
-						Brush.verticalGradient(
-							colors = listOf(
-								BottomAppBarDefaults.containerColor.copy(0.7f),
-								BottomAppBarDefaults.containerColor
+			if (showBottomBar) {
+				Box(
+					modifier = Modifier
+						.align(Alignment.BottomCenter)
+						.background(
+							Brush.verticalGradient(
+								colors = listOf(
+									BottomAppBarDefaults.containerColor.copy(0.7f),
+									BottomAppBarDefaults.containerColor
+								)
 							)
 						)
-					)
-			) {
-				Box(
-					modifier = Modifier.navigationBarsPadding()
 				) {
-					BottomAppBar(
-						modifier = Modifier
-							.height(52.dp),
-						tonalElevation = 8.dp,
-						containerColor = Color.Transparent
+					Box(
+						modifier = Modifier.navigationBarsPadding()
 					) {
-						Row(
-							modifier = Modifier.fillMaxSize(),
-							horizontalArrangement = Arrangement.SpaceAround,
-							verticalAlignment = Alignment.CenterVertically
+						BottomAppBar(
+							modifier = Modifier
+								.height(52.dp),
+							tonalElevation = 8.dp,
+							containerColor = Color.Transparent
 						) {
-							val items = listOf(
-								HomeScreen to "Home",
-								SearchScreen to "Search",
-								FavoritesScreen to "Favorites",
-								ProfileScreen to "Profile"
-							)
+							Row(
+								modifier = Modifier.fillMaxSize(),
+								horizontalArrangement = Arrangement.SpaceAround,
+								verticalAlignment = Alignment.CenterVertically
+							) {
+								val items = listOf(
+									HomeScreen to "Home",
+									SearchScreen to "Search",
+									FavoritesScreen to "Favorites",
+									ProfileScreen to "Profile"
+								)
 
-							items.forEach { (screen, label) ->
-								val isSelected = currentRoute == screen::class.qualifiedName
-								Button(
-									onClick = {
-										navController.navigate(screen) {
-											popUpTo(navController.graph.startDestinationId) {
-												saveState = true
+								items.forEach { (screen, label) ->
+									val isSelected = currentRoute == screen::class.qualifiedName
+									Button(
+										onClick = {
+											navController.navigate(screen) {
+												popUpTo(navController.graph.startDestinationId) {
+													saveState = true
+												}
+												launchSingleTop = true
+												restoreState = true
 											}
-											launchSingleTop = true
-											restoreState = true
-										}
-									},
-									colors = ButtonDefaults.buttonColors(
-										containerColor = Color.Transparent
-									),
-									contentPadding = PaddingValues(0.dp)
-								) {
-									Icon(
-										imageVector = when (screen) {
-											HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
-											SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
-											FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
-											ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
-											else -> Icons.Default.Info // Fallback (not used)
 										},
-										contentDescription = label,
-										modifier = Modifier.size(28.dp),
-										tint = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
-									)
+										colors = ButtonDefaults.buttonColors(
+											containerColor = Color.Transparent
+										),
+										contentPadding = PaddingValues(0.dp)
+									) {
+										Icon(
+											imageVector = when (screen) {
+												HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
+												SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
+												FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
+												ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
+												else -> Icons.Default.Info // Fallback (not used)
+											},
+											contentDescription = label,
+											modifier = Modifier.size(28.dp),
+											tint = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+										)
+									}
 								}
 							}
 						}
@@ -230,7 +242,6 @@ private fun MoviqueAppContent(
 				}
 			}
 		}
-//		}
 	}
 }
 

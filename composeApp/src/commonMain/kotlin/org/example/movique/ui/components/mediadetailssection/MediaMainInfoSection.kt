@@ -81,10 +81,9 @@ fun MediaMainInfoSection(
 ) {
 	Column(
 		modifier = modifier
-			.padding(horizontal = 16.dp)
 	) {
 		Card(
-			modifier = Modifier.fillMaxWidth(),
+			modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
 			shape = MaterialTheme.shapes.large,
 			colors = CardDefaults.cardColors(
 				containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(0.4f),
@@ -193,7 +192,7 @@ fun MediaMainInfoSection(
 		Spacer(modifier = Modifier.height(12.dp))
 
 		Row(
-			modifier = Modifier.fillMaxWidth(),
+			modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
 			verticalAlignment = Alignment.Top
 		) {
 			// Poster Image
@@ -357,7 +356,7 @@ fun MediaMainInfoSection(
 			}
 		}
 
-		Spacer(modifier = Modifier.height(24.dp))
+		Spacer(modifier = Modifier.height(20.dp))
 
 		// Tagline & Overview
 		Column(
@@ -384,16 +383,18 @@ fun MediaMainInfoSection(
 					style = MaterialTheme.typography.labelLarge,
 					fontStyle = FontStyle.Italic,
 					color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
+					modifier = Modifier.padding(horizontal = 16.dp)
 				)
 				Spacer(modifier = Modifier.height(12.dp))
 			}
 			Text(
-				text = overview,
+				text = overview.ifBlank { "No overview available." },
 				style = MaterialTheme.typography.bodyMedium,
 				color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
 				maxLines = if (isOverviewExpanded) Int.MAX_VALUE else 3,
 				overflow = TextOverflow.Ellipsis,
 				modifier = Modifier
+					.padding(horizontal = 16.dp)
 					.clickable(
 						indication = null,
 						interactionSource = remember { MutableInteractionSource() },

@@ -47,11 +47,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBackIos
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.CalendarToday
@@ -62,7 +65,21 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.outlined.ArrowBackIosNew
+import androidx.compose.material.icons.outlined.ArrowForwardIos
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.More
+import androidx.compose.material.icons.outlined.MoreTime
 import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.MoreTime
+import androidx.compose.material.icons.rounded.StarOutline
+import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
@@ -79,9 +96,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -102,6 +122,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -133,6 +154,7 @@ import org.example.movique.ui.components.card.MediaCard
 import org.example.movique.ui.components.chip.GenreChip
 import org.example.movique.ui.components.mediadetailssection.MediaBackdrop
 import org.example.movique.ui.components.mediadetailssection.MediaMainInfoSection
+import org.example.movique.ui.components.tab.NoRippleTab
 import org.example.movique.util.Result
 import org.example.movique.util.Result.Loading.isLoading
 import org.example.movique.util.tools.Constants.NA
@@ -158,6 +180,7 @@ fun MediaDetailsScreen(
 	val movie = (getMovieDetails.value as? Result.Success)?.data
 	val tvSeries = (getTvSeriesDetails.value as? Result.Success)?.data
 	val listState = rememberScrollState()
+	val isScrolling = listState.isScrollInProgress
 	val scope = rememberCoroutineScope()
 	val localDensity = LocalDensity.current
 
@@ -265,6 +288,41 @@ fun MediaDetailsScreen(
 								retrieveTitleTopPx = { titleTopPx = it }
 							)
 
+							Spacer(modifier = Modifier.height(12.dp))
+
+							// For Selectable Tabs
+							val tabs = listOf(
+								"Cast",
+								"Crew",
+								"Genres",
+								"Details"
+							)
+							var selectedTabIndex by remember { mutableStateOf(0) }
+
+							TabRow(
+								modifier = Modifier,
+								selectedTabIndex = selectedTabIndex,
+								containerColor = Color.Transparent,
+								divider = {
+									HorizontalDivider(
+										modifier = Modifier
+											.fillMaxWidth()
+											.height(0.5.dp)
+									)
+								}
+							) {
+								tabs.forEachIndexed { index, title ->
+									NoRippleTab(
+										title = title,
+										index = index,
+										selectedTabIndex = selectedTabIndex,
+										onClick = { index ->
+											selectedTabIndex = index
+										}
+									)
+								}
+							}
+
 							Spacer(Modifier.height(1000.dp))
 							Spacer(Modifier.height(76.dp))
 							Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
@@ -272,17 +330,88 @@ fun MediaDetailsScreen(
 					}
 
 					// Bottom Action Bar
-					Card(
+					Box(
 						modifier = Modifier
 							.align(Alignment.BottomCenter)
-							.fillMaxWidth()
-							.height(76.dp)
-							.padding(horizontal = 16.dp)
-							.padding(
-								bottom = WindowInsets.statusBars.asPaddingValues().calculateBottomPadding()
-							)
+							.padding(WindowInsets.navigationBars.asPaddingValues())
 					) {
-
+						AnimatedVisibility(
+							visible = !isScrolling,
+							enter = fadeIn() + slideInVertically(
+								initialOffsetY = { 120 },
+							),
+							exit = fadeOut() + slideOutVertically(
+								targetOffsetY = { 120 },
+							)
+						) {
+							Card(
+								modifier = Modifier
+									.padding(vertical = 4.dp),
+								border = BorderStroke(
+									0.5.dp,
+									MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+								),
+								shape = MaterialTheme.shapes.extraLarge,
+								colors = CardDefaults.cardColors(
+									containerColor = BottomAppBarDefaults.containerColor.copy(0.85f)
+								)
+							) {
+								Row(
+									modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+									verticalAlignment = Alignment.CenterVertically,
+									horizontalArrangement = Arrangement.spacedBy(24 .dp)
+								) {
+									Icon(
+										imageVector = Icons.Rounded.FavoriteBorder,
+										contentDescription = "Like",
+										modifier = Modifier
+											.size(32.dp)
+											.clickable(
+												interactionSource = remember { MutableInteractionSource() },
+												indication = null,
+												onClick = { }
+											),
+										tint = MaterialTheme.colorScheme.primary
+									)
+									Icon(
+										imageVector = Icons.Rounded.StarOutline,
+										contentDescription = "Rate",
+										modifier = Modifier
+											.size(38.dp)
+											.clickable(
+												interactionSource = remember { MutableInteractionSource() },
+												indication = null,
+												onClick = { }
+											),
+										tint = MaterialTheme.colorScheme.primary
+									)
+									Icon(
+										imageVector = Icons.Outlined.Visibility,
+										contentDescription = "Watch",
+										modifier = Modifier
+											.size(36.dp)
+											.clickable(
+												interactionSource = remember { MutableInteractionSource() },
+												indication = null,
+												onClick = { }
+											),
+										tint = MaterialTheme.colorScheme.primary
+									)
+									Icon(
+										imageVector = Icons.Rounded.MoreTime,
+										contentDescription = "Watchlist",
+										modifier = Modifier
+											.size(34.dp)
+											.clickable(
+												interactionSource = remember { MutableInteractionSource() },
+												indication = null,
+												onClick = { }
+											),
+										tint = MaterialTheme.colorScheme.primary
+									)
+								}
+							}
+						}
 					}
 				}
 			}
