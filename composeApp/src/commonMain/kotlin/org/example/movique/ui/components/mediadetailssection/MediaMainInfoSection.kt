@@ -36,9 +36,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -240,8 +242,7 @@ fun MediaMainInfoSection(
 								"tv" -> tvSeries?.name
 								else -> ""
 							},
-							modifier = Modifier
-								.fillMaxSize(),
+							modifier = Modifier.fillMaxSize(),
 							contentScale = ContentScale.Crop,
 						)
 					}
@@ -411,7 +412,7 @@ fun MediaMainInfoSection(
 
 			if (wasOverviewOverflowing) {
 				Row(
-					modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+					modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
 					verticalAlignment = Alignment.CenterVertically
 				) {
 					val rotation by animateFloatAsState(
@@ -430,34 +431,41 @@ fun MediaMainInfoSection(
 								indication = null,
 								interactionSource = remember { MutableInteractionSource() },
 								onClick = { isOverviewExpanded = !isOverviewExpanded }
-							)
+							),
+						thickness = 0.5.dp
 					)
-					Spacer(modifier = Modifier.width(12.dp))
-					Text(
-						text = if (!isOverviewExpanded) "See more" else "See less",
-						color = MaterialTheme.colorScheme.primary,
-						style = MaterialTheme.typography.labelMedium,
-						modifier = Modifier
-							.clickable(
-								indication = null,
-								interactionSource = remember { MutableInteractionSource() },
-								onClick = { isOverviewExpanded = !isOverviewExpanded }
-							)
-					)
-					Icon(
-						imageVector = Icons.Default.KeyboardArrowDown,
-						contentDescription = if (isOverviewExpanded) "See less" else "See more",
-						tint = MaterialTheme.colorScheme.primary,
-						modifier = Modifier
-							.size(20.dp)
-							.graphicsLayer { rotationZ = rotation }
-							.clickable(
-								indication = null,
-								interactionSource = remember { MutableInteractionSource() },
-								onClick = { isOverviewExpanded = !isOverviewExpanded }
-							)
-					)
-					Spacer(modifier = Modifier.width(8.dp))
+					OutlinedButton(
+						modifier = Modifier.height(24.dp),
+						onClick = { isOverviewExpanded = !isOverviewExpanded },
+						contentPadding = PaddingValues(top = 0.dp, bottom = 0.dp, start = 12.dp, end = 6.dp),
+						colors = ButtonDefaults.outlinedButtonColors(
+							contentColor = MaterialTheme.colorScheme.primary
+						),
+						border = BorderStroke(0.5.dp,DividerDefaults.color)
+					) {
+						Text(
+							text = if (!isOverviewExpanded) "See more" else "See less",
+							style = MaterialTheme.typography.labelMedium,
+							modifier = Modifier
+								.clickable(
+									indication = null,
+									interactionSource = remember { MutableInteractionSource() },
+									onClick = { isOverviewExpanded = !isOverviewExpanded }
+								)
+						)
+						Icon(
+							imageVector = Icons.Default.KeyboardArrowDown,
+							contentDescription = if (isOverviewExpanded) "See less" else "See more",
+							modifier = Modifier
+								.size(20.dp)
+								.graphicsLayer { rotationZ = rotation }
+								.clickable(
+									indication = null,
+									interactionSource = remember { MutableInteractionSource() },
+									onClick = { isOverviewExpanded = !isOverviewExpanded }
+								)
+						)
+					}
 					HorizontalDivider(
 						modifier = Modifier
 							.weight(1f)
@@ -465,7 +473,8 @@ fun MediaMainInfoSection(
 								indication = null,
 								interactionSource = remember { MutableInteractionSource() },
 								onClick = { isOverviewExpanded = !isOverviewExpanded }
-							)
+							),
+						thickness = 0.5.dp
 					)
 				}
 			}

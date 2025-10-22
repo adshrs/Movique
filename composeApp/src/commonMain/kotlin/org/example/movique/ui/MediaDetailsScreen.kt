@@ -10,20 +10,15 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOut
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,69 +33,34 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.ArrowBackIos
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material.icons.outlined.ArrowBackIosNew
-import androidx.compose.material.icons.outlined.ArrowForwardIos
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.More
-import androidx.compose.material.icons.outlined.MoreTime
-import androidx.compose.material.icons.outlined.PlayCircle
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material.icons.rounded.StarOutline
-import androidx.compose.material.icons.rounded.Visibility
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -116,22 +76,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
@@ -140,32 +92,18 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Precision
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import org.example.movique.MediaDetailsScreen
 import org.example.movique.data.models.mediadetails.MovieDetailsResponseModel
 import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
-import org.example.movique.theme.extraColors
-import org.example.movique.theme.isSystemInDarkTheme
 import org.example.movique.theme.titleRegular
-import org.example.movique.ui.components.badge.MediaTypeBadge
-import org.example.movique.ui.components.card.MediaCard
-import org.example.movique.ui.components.chip.GenreChip
 import org.example.movique.ui.components.mediadetailssection.MediaBackdrop
 import org.example.movique.ui.components.mediadetailssection.MediaMainInfoSection
 import org.example.movique.ui.components.tab.NoRippleTab
 import org.example.movique.util.Result
-import org.example.movique.util.Result.Loading.isLoading
-import org.example.movique.util.tools.Constants.NA
 import org.example.movique.util.tools.smoothCinematicVerticalGradientBrush
-import org.example.movique.util.tools.toHourMinuteFormat
-import org.example.movique.util.tools.toSeasonText
 import org.example.movique.viewmodel.MediaDetailsViewModel
-import org.example.movique.viewmodel.MediaListViewModel
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.math.PI
-import kotlin.math.round
 
 @Composable
 fun MediaDetailsScreen(
@@ -288,7 +226,7 @@ fun MediaDetailsScreen(
 								retrieveTitleTopPx = { titleTopPx = it }
 							)
 
-							Spacer(modifier = Modifier.height(12.dp))
+							Spacer(modifier = Modifier.height(16.dp))
 
 							// For Selectable Tabs
 							val tabs = listOf(
@@ -299,16 +237,13 @@ fun MediaDetailsScreen(
 							)
 							var selectedTabIndex by remember { mutableStateOf(0) }
 
+							// Selectable Tabs
 							TabRow(
 								modifier = Modifier,
 								selectedTabIndex = selectedTabIndex,
 								containerColor = Color.Transparent,
 								divider = {
-									HorizontalDivider(
-										modifier = Modifier
-											.fillMaxWidth()
-											.height(0.5.dp)
-									)
+									HorizontalDivider(modifier = Modifier.fillMaxWidth(), thickness = 0.5.dp)
 								}
 							) {
 								tabs.forEachIndexed { index, title ->
@@ -320,6 +255,39 @@ fun MediaDetailsScreen(
 											selectedTabIndex = index
 										}
 									)
+								}
+							}
+
+							// Selected Tab Content
+							Column(
+								modifier = Modifier.fillMaxWidth()
+							) {
+								when (selectedTabIndex) {
+									0 -> {
+										MediaCastSection(
+											modifier = Modifier,
+											mediaType = mediaType,
+											movie = movie,
+											tvSeries = tvSeries
+										)
+									}
+
+									1 -> {
+										MediaCrewSection(
+											modifier = Modifier,
+											mediaType = mediaType,
+											movie = movie,
+											tvSeries = tvSeries
+										)
+									}
+
+									2 -> {
+
+									}
+
+									3 -> {
+
+									}
 								}
 							}
 
@@ -353,13 +321,13 @@ fun MediaDetailsScreen(
 								),
 								shape = MaterialTheme.shapes.extraLarge,
 								colors = CardDefaults.cardColors(
-									containerColor = BottomAppBarDefaults.containerColor.copy(0.85f)
+									containerColor = BottomAppBarDefaults.containerColor.copy(0.9f)
 								)
 							) {
 								Row(
 									modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
 									verticalAlignment = Alignment.CenterVertically,
-									horizontalArrangement = Arrangement.spacedBy(24 .dp)
+									horizontalArrangement = Arrangement.spacedBy(24.dp)
 								) {
 									Icon(
 										imageVector = Icons.Rounded.FavoriteBorder,
@@ -510,6 +478,384 @@ fun MediaDetailsScreen(
 					)
 				)
 			}
+		}
+	}
+}
+
+@Composable
+fun MediaCastSection(
+	modifier: Modifier = Modifier,
+	mediaType: String,
+	movie: MovieDetailsResponseModel?,
+	tvSeries: TvSeriesDetailsResponseModel?
+) {
+	val castList = when (mediaType) {
+		"movie" -> movie?.credits?.cast ?: emptyList()
+		"tv" -> tvSeries?.credits?.cast ?: emptyList()
+		else -> emptyList()
+	}
+
+	val batchSize = 6
+	var visibleCount by remember { mutableStateOf(batchSize) }
+
+	if (castList.isNotEmpty()) {
+		Column(modifier = modifier.fillMaxWidth().animateContentSize()) {
+			// Show limited items
+			castList.take(visibleCount).forEachIndexed { index, cast ->
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.clickable { /* TODO: navigate to cast details */ }
+				) {
+					if (index == 0) Spacer(modifier = Modifier.height(16.dp))
+					else Spacer(modifier = Modifier.height(8.dp))
+
+					Row(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(horizontal = 16.dp),
+						verticalAlignment = Alignment.Top,
+						horizontalArrangement = Arrangement.spacedBy(12.dp)
+					) {
+						OutlinedCard(
+							modifier = Modifier.size(42.dp),
+							colors = CardDefaults.cardColors(
+								containerColor = MaterialTheme.colorScheme.surfaceContainer,
+								contentColor = MaterialTheme.colorScheme.onSurface
+							),
+							border = BorderStroke(
+								1.dp,
+								MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
+							)
+						) {
+							AsyncImage(
+								model = ImageRequest.Builder(LocalPlatformContext.current)
+									.data("https://image.tmdb.org/t/p/w200${cast?.profilePath}")
+									.crossfade(true)
+									.precision(Precision.INEXACT)
+									.build(),
+								contentDescription = cast?.name ?: "Cast Image",
+								modifier = Modifier.fillMaxSize(),
+								contentScale = ContentScale.Crop
+							)
+						}
+
+						Column(
+							modifier = Modifier.weight(1f),
+							verticalArrangement = Arrangement.spacedBy(4.dp)
+						) {
+							Text(
+								text = cast?.name ?: "Unknown",
+								style = MaterialTheme.typography.bodyMedium,
+								fontWeight = FontWeight.Medium,
+								color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis
+							)
+							Text(
+								text = cast?.character ?: "Unknown",
+								style = MaterialTheme.typography.bodySmall,
+								color = MaterialTheme.colorScheme.onSurfaceVariant,
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis
+							)
+						}
+
+						Icon(
+							imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+							contentDescription = "Go to Cast Details",
+							modifier = Modifier
+								.size(16.dp)
+								.align(Alignment.CenterVertically),
+							tint = MaterialTheme.colorScheme.onSurfaceVariant
+						)
+					}
+
+					Spacer(modifier = Modifier.height(8.dp))
+				}
+			}
+		}
+		// Show controls at bottom
+		if (castList.size > batchSize) {
+			Row(
+				modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				HorizontalDivider(
+					modifier = Modifier
+						.weight(1f),
+					thickness = 0.5.dp
+				)
+				// Collapse Button
+				if (visibleCount > batchSize) {
+					OutlinedButton(
+						modifier = Modifier.height(24.dp),
+						onClick = { visibleCount = batchSize },
+						contentPadding = PaddingValues(
+							top = 0.dp,
+							bottom = 0.dp,
+							start = 6.dp,
+							end = 6.dp
+						),
+						colors = ButtonDefaults.outlinedButtonColors(
+							contentColor = MaterialTheme.colorScheme.primary
+						),
+						border = BorderStroke(0.5.dp, DividerDefaults.color)
+					) {
+						Icon(
+							imageVector = Icons.Default.KeyboardArrowUp,
+							contentDescription = "Collapse",
+							modifier = Modifier.size(20.dp)
+						)
+					}
+					HorizontalDivider(
+						modifier = Modifier
+							.width(12.dp),
+						thickness = 0.5.dp
+					)
+				}
+				// Show More Button
+				if (visibleCount < castList.size) {
+					OutlinedButton(
+						modifier = Modifier.height(24.dp),
+						onClick = {
+							visibleCount = (visibleCount + batchSize).coerceAtMost(castList.size)
+						},
+						contentPadding = PaddingValues(
+							top = 0.dp,
+							bottom = 0.dp,
+							start = 12.dp,
+							end = 6.dp
+						),
+						colors = ButtonDefaults.outlinedButtonColors(
+							contentColor = MaterialTheme.colorScheme.primary
+						),
+						border = BorderStroke(0.5.dp, DividerDefaults.color)
+					) {
+						Text(
+							text = "More",
+							style = MaterialTheme.typography.labelMedium,
+						)
+						Icon(
+							imageVector = Icons.Default.KeyboardArrowDown,
+							contentDescription = "More",
+							modifier = Modifier.size(20.dp)
+						)
+					}
+				}
+				HorizontalDivider(
+					modifier = Modifier
+						.weight(1f),
+					thickness = 0.5.dp
+				)
+			}
+		}
+	} else {
+		Box(
+			modifier = modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+			contentAlignment = Alignment.Center
+		) {
+			Text(
+				text = "No Cast Information Available",
+				style = MaterialTheme.typography.bodyMedium,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				textAlign = TextAlign.Center
+			)
+		}
+	}
+}
+
+
+@Composable
+fun MediaCrewSection(
+	modifier: Modifier = Modifier,
+	mediaType: String,
+	movie: MovieDetailsResponseModel?,
+	tvSeries: TvSeriesDetailsResponseModel?
+) {
+	val crewList = when (mediaType) {
+		"movie" -> movie?.credits?.crew ?: emptyList()
+		"tv" -> tvSeries?.credits?.crew ?: emptyList()
+		else -> emptyList()
+	}
+
+	val batchSize = 6
+	var visibleCount by remember { mutableStateOf(batchSize) }
+
+	if (crewList.isNotEmpty()) {
+		Column(modifier = modifier.fillMaxWidth().animateContentSize()) {
+			// Show limited items
+			crewList.take(visibleCount).forEach { crew ->
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.clickable(
+							onClick = { }
+						)
+				) {
+					if (crew == crewList.first()) {
+						Spacer(modifier = Modifier.height(16.dp))
+					} else {
+						Spacer(modifier = Modifier.height(8.dp))
+					}
+					Row(
+						modifier = modifier
+							.fillMaxWidth()
+							.padding(horizontal = 16.dp),
+						verticalAlignment = Alignment.Top,
+						horizontalArrangement = Arrangement.spacedBy(12.dp)
+					) {
+						OutlinedCard(
+							modifier = Modifier
+								.size(42.dp),
+							colors = CardDefaults.cardColors(
+								containerColor = MaterialTheme.colorScheme.surfaceContainer,
+								contentColor = MaterialTheme.colorScheme.onSurface
+							),
+							border = BorderStroke(
+								1.dp,
+								MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
+							)
+						) {
+							AsyncImage(
+								model = ImageRequest.Builder(LocalPlatformContext.current)
+									.data("https://image.tmdb.org/t/p/w200${crew?.profilePath}")
+									.crossfade(true)
+									.precision(Precision.INEXACT)
+									.build(),
+								contentDescription = crew?.name ?: "Crew Image",
+								modifier = Modifier.fillMaxSize(),
+								contentScale = ContentScale.Crop
+							)
+						}
+						Column(
+							modifier = Modifier.weight(1f),
+							verticalArrangement = Arrangement.spacedBy(4.dp)
+						) {
+							Text(
+								text = crew?.name ?: "Unknown",
+								style = MaterialTheme.typography.bodyMedium,
+								fontWeight = FontWeight.Medium,
+								color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis
+							)
+							Text(
+								text = crew?.job ?: "Unknown",
+								style = MaterialTheme.typography.bodySmall,
+								color = MaterialTheme.colorScheme.onSurfaceVariant,
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis
+							)
+						}
+						Box(
+							modifier = Modifier.height(40.dp)
+						) {
+							Icon(
+								imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+								contentDescription = "Go to Crew Details",
+								modifier = Modifier
+									.align(Alignment.Center)
+									.size(16.dp),
+								tint = MaterialTheme.colorScheme.onSurfaceVariant
+							)
+						}
+					}
+
+					Spacer(modifier = Modifier.height(8.dp))
+				}
+			}
+		}
+		// Show controls at bottom
+		if (crewList.size > batchSize) {
+			Row(
+				modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				HorizontalDivider(
+					modifier = Modifier
+						.weight(1f),
+					thickness = 0.5.dp
+				)
+				// Collapse Button
+				if (visibleCount > batchSize) {
+					OutlinedButton(
+						modifier = Modifier.height(24.dp),
+						onClick = { visibleCount = batchSize },
+						contentPadding = PaddingValues(
+							top = 0.dp,
+							bottom = 0.dp,
+							start = 6.dp,
+							end = 6.dp
+						),
+						colors = ButtonDefaults.outlinedButtonColors(
+							contentColor = MaterialTheme.colorScheme.primary
+						),
+						border = BorderStroke(0.5.dp, DividerDefaults.color)
+					) {
+						Icon(
+							imageVector = Icons.Default.KeyboardArrowUp,
+							contentDescription = "Collapse",
+							modifier = Modifier.size(20.dp)
+						)
+					}
+					HorizontalDivider(
+						modifier = Modifier
+							.width(12.dp),
+						thickness = 0.5.dp
+					)
+				}
+				// Show More Button
+				if (visibleCount < crewList.size) {
+					OutlinedButton(
+						modifier = Modifier.height(24.dp),
+						onClick = {
+							visibleCount = (visibleCount + batchSize).coerceAtMost(crewList.size)
+						},
+						contentPadding = PaddingValues(
+							top = 0.dp,
+							bottom = 0.dp,
+							start = 12.dp,
+							end = 6.dp
+						),
+						colors = ButtonDefaults.outlinedButtonColors(
+							contentColor = MaterialTheme.colorScheme.primary
+						),
+						border = BorderStroke(0.5.dp, DividerDefaults.color)
+					) {
+						Text(
+							text = "More",
+							style = MaterialTheme.typography.labelMedium,
+						)
+						Icon(
+							imageVector = Icons.Default.KeyboardArrowDown,
+							contentDescription = "More",
+							modifier = Modifier.size(20.dp)
+						)
+					}
+				}
+				HorizontalDivider(
+					modifier = Modifier
+						.weight(1f),
+					thickness = 0.5.dp
+				)
+			}
+		}
+	} else {
+		Box(
+			modifier = modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+			contentAlignment = Alignment.Center
+		) {
+			Text(
+				text = "No Crew Information Available",
+				style = MaterialTheme.typography.bodyMedium,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				textAlign = TextAlign.Center
+			)
 		}
 	}
 }
