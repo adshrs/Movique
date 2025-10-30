@@ -99,6 +99,7 @@ import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.theme.titleRegular
 import org.example.movique.ui.components.mediadetailssection.MediaBackdrop
 import org.example.movique.ui.components.mediadetailssection.MediaMainInfoSection
+import org.example.movique.ui.components.mediadetailssection.multipletabssection.MultipleTabsSection
 import org.example.movique.ui.components.tab.NoRippleTab
 import org.example.movique.util.Result
 import org.example.movique.util.tools.smoothCinematicVerticalGradientBrush
@@ -179,7 +180,7 @@ fun MediaDetailsScreen(
 				Box(
 					modifier = Modifier.fillMaxSize()
 				) {
-					// Backdrop
+					// Backdrop Background
 					MediaBackdrop(mediaType, movie, tvSeries)
 					Box(
 						modifier = Modifier
@@ -228,71 +229,14 @@ fun MediaDetailsScreen(
 
 							Spacer(modifier = Modifier.height(16.dp))
 
-							// For Selectable Tabs
-							val tabs = listOf(
-								"Cast",
-								"Crew",
-								"Genres",
-								"Details"
+							MultipleTabsSection(
+								modifier = Modifier.fillMaxWidth(),
+								mediaType = mediaType,
+								movie = movie,
+								tvSeries = tvSeries
 							)
-							var selectedTabIndex by remember { mutableStateOf(0) }
 
-							// Selectable Tabs
-							TabRow(
-								modifier = Modifier,
-								selectedTabIndex = selectedTabIndex,
-								containerColor = Color.Transparent,
-								divider = {
-									HorizontalDivider(modifier = Modifier.fillMaxWidth(), thickness = 0.5.dp)
-								}
-							) {
-								tabs.forEachIndexed { index, title ->
-									NoRippleTab(
-										title = title,
-										index = index,
-										selectedTabIndex = selectedTabIndex,
-										onClick = { index ->
-											selectedTabIndex = index
-										}
-									)
-								}
-							}
-
-							// Selected Tab Content
-							Column(
-								modifier = Modifier.fillMaxWidth()
-							) {
-								when (selectedTabIndex) {
-									0 -> {
-										MediaCastSection(
-											modifier = Modifier,
-											mediaType = mediaType,
-											movie = movie,
-											tvSeries = tvSeries
-										)
-									}
-
-									1 -> {
-										MediaCrewSection(
-											modifier = Modifier,
-											mediaType = mediaType,
-											movie = movie,
-											tvSeries = tvSeries
-										)
-									}
-
-									2 -> {
-
-									}
-
-									3 -> {
-
-									}
-								}
-							}
-
-							Spacer(Modifier.height(1000.dp))
-							Spacer(Modifier.height(76.dp))
+							Spacer(Modifier.height(84.dp))
 							Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
 						}
 					}
@@ -327,7 +271,7 @@ fun MediaDetailsScreen(
 								Row(
 									modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
 									verticalAlignment = Alignment.CenterVertically,
-									horizontalArrangement = Arrangement.spacedBy(24.dp)
+									horizontalArrangement = Arrangement.spacedBy(28.dp)
 								) {
 									Icon(
 										imageVector = Icons.Rounded.FavoriteBorder,
@@ -342,10 +286,10 @@ fun MediaDetailsScreen(
 										tint = MaterialTheme.colorScheme.primary
 									)
 									Icon(
-										imageVector = Icons.Rounded.StarOutline,
-										contentDescription = "Rate",
+										imageVector = Icons.Outlined.Visibility,
+										contentDescription = "Watch",
 										modifier = Modifier
-											.size(38.dp)
+											.size(36.dp)
 											.clickable(
 												interactionSource = remember { MutableInteractionSource() },
 												indication = null,
@@ -354,10 +298,10 @@ fun MediaDetailsScreen(
 										tint = MaterialTheme.colorScheme.primary
 									)
 									Icon(
-										imageVector = Icons.Outlined.Visibility,
-										contentDescription = "Watch",
+										imageVector = Icons.Rounded.StarOutline,
+										contentDescription = "Rate",
 										modifier = Modifier
-											.size(36.dp)
+											.size(38.dp)
 											.clickable(
 												interactionSource = remember { MutableInteractionSource() },
 												indication = null,
@@ -478,384 +422,6 @@ fun MediaDetailsScreen(
 					)
 				)
 			}
-		}
-	}
-}
-
-@Composable
-fun MediaCastSection(
-	modifier: Modifier = Modifier,
-	mediaType: String,
-	movie: MovieDetailsResponseModel?,
-	tvSeries: TvSeriesDetailsResponseModel?
-) {
-	val castList = when (mediaType) {
-		"movie" -> movie?.credits?.cast ?: emptyList()
-		"tv" -> tvSeries?.credits?.cast ?: emptyList()
-		else -> emptyList()
-	}
-
-	val batchSize = 6
-	var visibleCount by remember { mutableStateOf(batchSize) }
-
-	if (castList.isNotEmpty()) {
-		Column(modifier = modifier.fillMaxWidth().animateContentSize()) {
-			// Show limited items
-			castList.take(visibleCount).forEachIndexed { index, cast ->
-				Column(
-					modifier = Modifier
-						.fillMaxWidth()
-						.clickable { /* TODO: navigate to cast details */ }
-				) {
-					if (index == 0) Spacer(modifier = Modifier.height(16.dp))
-					else Spacer(modifier = Modifier.height(8.dp))
-
-					Row(
-						modifier = Modifier
-							.fillMaxWidth()
-							.padding(horizontal = 16.dp),
-						verticalAlignment = Alignment.Top,
-						horizontalArrangement = Arrangement.spacedBy(12.dp)
-					) {
-						OutlinedCard(
-							modifier = Modifier.size(42.dp),
-							colors = CardDefaults.cardColors(
-								containerColor = MaterialTheme.colorScheme.surfaceContainer,
-								contentColor = MaterialTheme.colorScheme.onSurface
-							),
-							border = BorderStroke(
-								1.dp,
-								MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
-							)
-						) {
-							AsyncImage(
-								model = ImageRequest.Builder(LocalPlatformContext.current)
-									.data("https://image.tmdb.org/t/p/w200${cast?.profilePath}")
-									.crossfade(true)
-									.precision(Precision.INEXACT)
-									.build(),
-								contentDescription = cast?.name ?: "Cast Image",
-								modifier = Modifier.fillMaxSize(),
-								contentScale = ContentScale.Crop
-							)
-						}
-
-						Column(
-							modifier = Modifier.weight(1f),
-							verticalArrangement = Arrangement.spacedBy(4.dp)
-						) {
-							Text(
-								text = cast?.name ?: "Unknown",
-								style = MaterialTheme.typography.bodyMedium,
-								fontWeight = FontWeight.Medium,
-								color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
-								maxLines = 1,
-								overflow = TextOverflow.Ellipsis
-							)
-							Text(
-								text = cast?.character ?: "Unknown",
-								style = MaterialTheme.typography.bodySmall,
-								color = MaterialTheme.colorScheme.onSurfaceVariant,
-								maxLines = 1,
-								overflow = TextOverflow.Ellipsis
-							)
-						}
-
-						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-							contentDescription = "Go to Cast Details",
-							modifier = Modifier
-								.size(16.dp)
-								.align(Alignment.CenterVertically),
-							tint = MaterialTheme.colorScheme.onSurfaceVariant
-						)
-					}
-
-					Spacer(modifier = Modifier.height(8.dp))
-				}
-			}
-		}
-		// Show controls at bottom
-		if (castList.size > batchSize) {
-			Row(
-				modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-				verticalAlignment = Alignment.CenterVertically
-			) {
-				HorizontalDivider(
-					modifier = Modifier
-						.weight(1f),
-					thickness = 0.5.dp
-				)
-				// Collapse Button
-				if (visibleCount > batchSize) {
-					OutlinedButton(
-						modifier = Modifier.height(24.dp),
-						onClick = { visibleCount = batchSize },
-						contentPadding = PaddingValues(
-							top = 0.dp,
-							bottom = 0.dp,
-							start = 6.dp,
-							end = 6.dp
-						),
-						colors = ButtonDefaults.outlinedButtonColors(
-							contentColor = MaterialTheme.colorScheme.primary
-						),
-						border = BorderStroke(0.5.dp, DividerDefaults.color)
-					) {
-						Icon(
-							imageVector = Icons.Default.KeyboardArrowUp,
-							contentDescription = "Collapse",
-							modifier = Modifier.size(20.dp)
-						)
-					}
-					HorizontalDivider(
-						modifier = Modifier
-							.width(12.dp),
-						thickness = 0.5.dp
-					)
-				}
-				// Show More Button
-				if (visibleCount < castList.size) {
-					OutlinedButton(
-						modifier = Modifier.height(24.dp),
-						onClick = {
-							visibleCount = (visibleCount + batchSize).coerceAtMost(castList.size)
-						},
-						contentPadding = PaddingValues(
-							top = 0.dp,
-							bottom = 0.dp,
-							start = 12.dp,
-							end = 6.dp
-						),
-						colors = ButtonDefaults.outlinedButtonColors(
-							contentColor = MaterialTheme.colorScheme.primary
-						),
-						border = BorderStroke(0.5.dp, DividerDefaults.color)
-					) {
-						Text(
-							text = "More",
-							style = MaterialTheme.typography.labelMedium,
-						)
-						Icon(
-							imageVector = Icons.Default.KeyboardArrowDown,
-							contentDescription = "More",
-							modifier = Modifier.size(20.dp)
-						)
-					}
-				}
-				HorizontalDivider(
-					modifier = Modifier
-						.weight(1f),
-					thickness = 0.5.dp
-				)
-			}
-		}
-	} else {
-		Box(
-			modifier = modifier
-				.fillMaxWidth()
-				.padding(16.dp),
-			contentAlignment = Alignment.Center
-		) {
-			Text(
-				text = "No Cast Information Available",
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-				textAlign = TextAlign.Center
-			)
-		}
-	}
-}
-
-
-@Composable
-fun MediaCrewSection(
-	modifier: Modifier = Modifier,
-	mediaType: String,
-	movie: MovieDetailsResponseModel?,
-	tvSeries: TvSeriesDetailsResponseModel?
-) {
-	val crewList = when (mediaType) {
-		"movie" -> movie?.credits?.crew ?: emptyList()
-		"tv" -> tvSeries?.credits?.crew ?: emptyList()
-		else -> emptyList()
-	}
-
-	val batchSize = 6
-	var visibleCount by remember { mutableStateOf(batchSize) }
-
-	if (crewList.isNotEmpty()) {
-		Column(modifier = modifier.fillMaxWidth().animateContentSize()) {
-			// Show limited items
-			crewList.take(visibleCount).forEach { crew ->
-				Column(
-					modifier = Modifier
-						.fillMaxWidth()
-						.clickable(
-							onClick = { }
-						)
-				) {
-					if (crew == crewList.first()) {
-						Spacer(modifier = Modifier.height(16.dp))
-					} else {
-						Spacer(modifier = Modifier.height(8.dp))
-					}
-					Row(
-						modifier = modifier
-							.fillMaxWidth()
-							.padding(horizontal = 16.dp),
-						verticalAlignment = Alignment.Top,
-						horizontalArrangement = Arrangement.spacedBy(12.dp)
-					) {
-						OutlinedCard(
-							modifier = Modifier
-								.size(42.dp),
-							colors = CardDefaults.cardColors(
-								containerColor = MaterialTheme.colorScheme.surfaceContainer,
-								contentColor = MaterialTheme.colorScheme.onSurface
-							),
-							border = BorderStroke(
-								1.dp,
-								MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
-							)
-						) {
-							AsyncImage(
-								model = ImageRequest.Builder(LocalPlatformContext.current)
-									.data("https://image.tmdb.org/t/p/w200${crew?.profilePath}")
-									.crossfade(true)
-									.precision(Precision.INEXACT)
-									.build(),
-								contentDescription = crew?.name ?: "Crew Image",
-								modifier = Modifier.fillMaxSize(),
-								contentScale = ContentScale.Crop
-							)
-						}
-						Column(
-							modifier = Modifier.weight(1f),
-							verticalArrangement = Arrangement.spacedBy(4.dp)
-						) {
-							Text(
-								text = crew?.name ?: "Unknown",
-								style = MaterialTheme.typography.bodyMedium,
-								fontWeight = FontWeight.Medium,
-								color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
-								maxLines = 1,
-								overflow = TextOverflow.Ellipsis
-							)
-							Text(
-								text = crew?.job ?: "Unknown",
-								style = MaterialTheme.typography.bodySmall,
-								color = MaterialTheme.colorScheme.onSurfaceVariant,
-								maxLines = 1,
-								overflow = TextOverflow.Ellipsis
-							)
-						}
-						Box(
-							modifier = Modifier.height(40.dp)
-						) {
-							Icon(
-								imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-								contentDescription = "Go to Crew Details",
-								modifier = Modifier
-									.align(Alignment.Center)
-									.size(16.dp),
-								tint = MaterialTheme.colorScheme.onSurfaceVariant
-							)
-						}
-					}
-
-					Spacer(modifier = Modifier.height(8.dp))
-				}
-			}
-		}
-		// Show controls at bottom
-		if (crewList.size > batchSize) {
-			Row(
-				modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-				verticalAlignment = Alignment.CenterVertically
-			) {
-				HorizontalDivider(
-					modifier = Modifier
-						.weight(1f),
-					thickness = 0.5.dp
-				)
-				// Collapse Button
-				if (visibleCount > batchSize) {
-					OutlinedButton(
-						modifier = Modifier.height(24.dp),
-						onClick = { visibleCount = batchSize },
-						contentPadding = PaddingValues(
-							top = 0.dp,
-							bottom = 0.dp,
-							start = 6.dp,
-							end = 6.dp
-						),
-						colors = ButtonDefaults.outlinedButtonColors(
-							contentColor = MaterialTheme.colorScheme.primary
-						),
-						border = BorderStroke(0.5.dp, DividerDefaults.color)
-					) {
-						Icon(
-							imageVector = Icons.Default.KeyboardArrowUp,
-							contentDescription = "Collapse",
-							modifier = Modifier.size(20.dp)
-						)
-					}
-					HorizontalDivider(
-						modifier = Modifier
-							.width(12.dp),
-						thickness = 0.5.dp
-					)
-				}
-				// Show More Button
-				if (visibleCount < crewList.size) {
-					OutlinedButton(
-						modifier = Modifier.height(24.dp),
-						onClick = {
-							visibleCount = (visibleCount + batchSize).coerceAtMost(crewList.size)
-						},
-						contentPadding = PaddingValues(
-							top = 0.dp,
-							bottom = 0.dp,
-							start = 12.dp,
-							end = 6.dp
-						),
-						colors = ButtonDefaults.outlinedButtonColors(
-							contentColor = MaterialTheme.colorScheme.primary
-						),
-						border = BorderStroke(0.5.dp, DividerDefaults.color)
-					) {
-						Text(
-							text = "More",
-							style = MaterialTheme.typography.labelMedium,
-						)
-						Icon(
-							imageVector = Icons.Default.KeyboardArrowDown,
-							contentDescription = "More",
-							modifier = Modifier.size(20.dp)
-						)
-					}
-				}
-				HorizontalDivider(
-					modifier = Modifier
-						.weight(1f),
-					thickness = 0.5.dp
-				)
-			}
-		}
-	} else {
-		Box(
-			modifier = modifier
-				.fillMaxWidth()
-				.padding(16.dp),
-			contentAlignment = Alignment.Center
-		) {
-			Text(
-				text = "No Crew Information Available",
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-				textAlign = TextAlign.Center
-			)
 		}
 	}
 }

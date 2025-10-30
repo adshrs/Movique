@@ -15,15 +15,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
@@ -62,6 +59,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Precision
+import io.ktor.websocket.Frame.Companion.byType
 import org.example.movique.data.models.mediadetails.MovieDetailsResponseModel
 import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.theme.extraColors
@@ -294,16 +292,39 @@ fun MediaMainInfoSection(
 					"tv" -> tvSeries?.firstAirDate
 					else -> null
 				}
-				val directors = when (mediaType) {
+				val by = when (mediaType) {
 					"movie" -> movie?.credits?.crew
 						?.filter { it?.job == "Director" }
 						?.mapNotNull { it?.name } ?: emptyList()
 
-					"tv" -> tvSeries?.credits?.crew
-						?.filter { it?.job == "Director" || it?.job == "Series Director" }
-						?.mapNotNull { it?.name } ?: emptyList()
+					"tv" -> if (!tvSeries?.createdBy.isNullOrEmpty()) {
+						tvSeries.createdBy.mapNotNull { it?.name }
+					} else {
+						tvSeries?.credits?.crew
+							?.filter { it?.job == "Director" || it?.job == "Series Director" }
+							?.mapNotNull { it?.name } ?: emptyList()
+					}
 
 					else -> emptyList()
+				}
+				val byType = when (mediaType) {
+					"movie" -> "DIRECTED BY"
+					"tv" -> if (!tvSeries?.createdBy.isNullOrEmpty()) {
+						"CREATED BY"
+					} else {
+						if (tvSeries?.credits?.crew
+								?.filter { it?.job == "Director" || it?.job == "Series Director" }
+								?.mapNotNull { it?.name }
+								?.isNotEmpty() == true
+						)
+						{
+							"DIRECTED BY"
+						} else {
+							""
+						}
+					}
+
+					else -> ""
 				}
 				val genres = when (mediaType) {
 					"movie" -> movie?.genres?.mapNotNull { it?.name } ?: emptyList()
@@ -318,28 +339,26 @@ fun MediaMainInfoSection(
 					modifier = Modifier.onGloballyPositioned { coordinatess ->
 						// boundsInWindow gives a Rect in window coordinates
 						retrieveTitleTopPx(coordinatess.boundsInWindow().top)
-					},
+					}
 				)
 				if (!originalTitle.isNullOrEmpty() && originalTitle != title) {
 					Text(
 						text = originalTitle,
 						style = MaterialTheme.typography.labelMedium,
 						fontStyle = FontStyle.Italic,
-						color = MaterialTheme.colorScheme.tertiary.copy(0.8f),
+						color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
 					)
 				}
 				if (!releaseDate.isNullOrEmpty()) {
 					Text(
-						text = releaseDate.take(4) + if (!directors.isEmpty()) {
-							"  •  " + "DIRECTED BY"
-						} else "",
+						text = releaseDate.take(4) + if (!by.isEmpty()) "  •  $byType" else "",
 						style = MaterialTheme.typography.labelLarge,
 						color = MaterialTheme.colorScheme.tertiary.copy(0.8f),
 					)
 				}
-				if (directors.isNotEmpty()) {
+				if (by.isNotEmpty()) {
 					Text(
-						text = directors.joinToString(", "),
+						text = by.joinToString(", "),
 						style = MaterialTheme.typography.labelLarge,
 						color = MaterialTheme.colorScheme.tertiary.copy(0.8f),
 					)
