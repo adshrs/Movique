@@ -331,7 +331,7 @@ fun MediaDetailsScreen(
 			// Static Top Bar (Only Icon Buttons)
 			TopAppBar(
 				modifier = Modifier
-					.height(80.dp)
+//					.height(80.dp)
 					.background(Color.Transparent),
 				title = { },
 				navigationIcon = {
@@ -376,7 +376,7 @@ fun MediaDetailsScreen(
 			) {
 				TopAppBar(
 					modifier = Modifier
-						.height(80.dp)
+//						.height(80.dp)
 						.background(
 							Brush.verticalGradient(
 								listOf(

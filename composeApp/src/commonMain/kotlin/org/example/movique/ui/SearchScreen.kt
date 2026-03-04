@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -57,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -96,6 +101,11 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 	var query by rememberSaveable { mutableStateOf("") }
 	var activeCardId by rememberSaveable { mutableStateOf<Int?>(null) }
 
+	val localDensity = LocalDensity.current
+	val topBarHeight = with(localDensity) {
+		TopAppBarDefaults.TopAppBarExpandedHeight
+	}
+
 	// Live search: Trigger search only for non-empty queries with debounce
 	LaunchedEffect(query) {
 		snapshotFlow { query }
@@ -132,7 +142,12 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 				state = listState,
 				modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
 			) {
-				item { Spacer(modifier = Modifier.height(100.dp)) }
+				item {
+					Spacer(modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues()))
+				}
+				item {
+					Spacer(modifier = Modifier.height(topBarHeight + 16.dp))
+				}
 				when {
 					query.isBlank() && searchResults.isEmpty() -> {
 						item {
@@ -245,14 +260,16 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 						}
 					}
 				}
-				item { Spacer(modifier = Modifier.height(84.dp)) }
+				item {
+					Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
+				}
 			}
 		}
 
 		// Top Bar
 		CenterAlignedTopAppBar(
 			modifier = Modifier
-				.height(96.dp)
+//				.height(96.dp)
 				.background(
 					Brush.verticalGradient(
 						colors = listOf(

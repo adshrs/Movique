@@ -185,7 +185,7 @@ private fun MoviqueAppContent(
 						)
 				) {
 					Box(
-						modifier = Modifier.navigationBarsPadding()
+						modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
 					) {
 						BottomAppBar(
 							modifier = Modifier

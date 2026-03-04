@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.FlowPreview
@@ -69,6 +70,11 @@ fun MediaListScreen(
 	val getTrendingThisWeek = mediaListViewModel.getTrendingThisWeek.collectAsState()
 	val listState = rememberLazyGridState()
 	var activeCardId by rememberSaveable { mutableStateOf<Int?>(null) }
+
+	val localDensity = LocalDensity.current
+	val topBarHeight = with(localDensity) {
+		TopAppBarDefaults.TopAppBarExpandedHeight
+	}
 
 	// Initial fetch
 	LaunchedEffect(category) {
@@ -156,7 +162,7 @@ fun MediaListScreen(
 					Spacer(modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues()))
 				}
 				item(span = { GridItemSpan(maxLineSpan) }) {
-					Spacer(modifier = Modifier.height(64.dp))
+					Spacer(modifier = Modifier.height(topBarHeight + 16.dp))
 				}
 
 				itemsIndexed(mediaItems) { index, item ->
@@ -212,7 +218,7 @@ fun MediaListScreen(
 		//Top Bar
 		TopAppBar(
 			modifier = Modifier
-				.height(80.dp)
+//				.height(80.dp)
 				.background(
 					Brush.verticalGradient(
 						listOf(

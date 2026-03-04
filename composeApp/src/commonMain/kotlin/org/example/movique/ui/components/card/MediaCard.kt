@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -52,6 +53,7 @@ import kotlin.math.round
 @Composable
 fun MediaCard(
 	cardId: Int,
+	fixedWidth: Boolean = false,
 	mediaTypeEnabled: Boolean = false,
 	titleEnabled: Boolean = true,
 	mediaType: String?,
@@ -65,25 +67,44 @@ fun MediaCard(
 	onDetailActionClick: () -> Unit = {}
 ) {
 	Box(
-		modifier = Modifier
-			.width(120.dp)
-			.clip(RoundedCornerShape(12.dp))
-			.border(
-				border = BorderStroke(
-					0.5.dp,
-					MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-				),
-				shape = RoundedCornerShape(12.dp)
-			)
+		modifier = if (fixedWidth)
+			Modifier
+				.width(120.dp)
+				.clip(RoundedCornerShape(12.dp))
+				.border(
+					border = BorderStroke(
+						0.5.dp,
+						MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+					),
+					shape = RoundedCornerShape(12.dp)
+				)
+		else
+			Modifier
+				.clip(RoundedCornerShape(12.dp))
+				.border(
+					border = BorderStroke(
+						0.5.dp,
+						MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+					),
+					shape = RoundedCornerShape(12.dp)
+				)
 	) {
 		OutlinedCard(
-			modifier = Modifier
-				.width(120.dp)
-				.clickable(
-					indication = null,
-					interactionSource = null,
-					onClick = { onCardClick(cardId) }
-				),
+			modifier = if (fixedWidth)
+				Modifier
+					.width(120.dp)
+					.clickable(
+						indication = null,
+						interactionSource = null,
+						onClick = { onCardClick(cardId) }
+					)
+			else
+				Modifier
+					.clickable(
+						indication = null,
+						interactionSource = null,
+						onClick = { onCardClick(cardId) }
+					),
 			colors = CardDefaults.cardColors(
 				containerColor = MaterialTheme.colorScheme.surfaceContainer,
 				contentColor = MaterialTheme.colorScheme.onSurface
