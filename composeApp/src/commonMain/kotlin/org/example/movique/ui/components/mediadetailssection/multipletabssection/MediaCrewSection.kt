@@ -115,7 +115,7 @@ fun MediaCrewSection(
 							verticalArrangement = Arrangement.spacedBy(4.dp)
 						) {
 							Text(
-								text = crew?.name ?: "Unknown",
+								text = crew?.name?.ifBlank { "Unknown Person" } ?: "Unknown Person",
 								style = MaterialTheme.typography.bodyMedium,
 								fontWeight = FontWeight.Medium,
 								color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
@@ -123,7 +123,7 @@ fun MediaCrewSection(
 								overflow = TextOverflow.Ellipsis
 							)
 							Text(
-								text = crew?.job ?: "Unknown",
+								text = crew?.job?.ifBlank { "Unknown Job" } ?: "Unknown Job",
 								style = MaterialTheme.typography.bodySmall,
 								color = MaterialTheme.colorScheme.onSurfaceVariant,
 								maxLines = 1,

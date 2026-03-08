@@ -111,7 +111,7 @@ fun MediaCastSection(
 							verticalArrangement = Arrangement.spacedBy(4.dp)
 						) {
 							Text(
-								text = cast?.name ?: "Unknown",
+								text = cast?.name?.ifBlank { "Unknown Person" } ?: "Unknown Person",
 								style = MaterialTheme.typography.bodyMedium,
 								fontWeight = FontWeight.Medium,
 								color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
@@ -119,7 +119,7 @@ fun MediaCastSection(
 								overflow = TextOverflow.Ellipsis
 							)
 							Text(
-								text = cast?.character ?: "Unknown",
+								text = cast?.character?.ifBlank { "Unknown Character" } ?: "Unknown Character",
 								style = MaterialTheme.typography.bodySmall,
 								color = MaterialTheme.colorScheme.onSurfaceVariant,
 								maxLines = 1,

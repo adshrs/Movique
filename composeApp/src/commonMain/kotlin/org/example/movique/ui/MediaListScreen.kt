@@ -229,7 +229,7 @@ fun MediaListScreen(
 				),
 			title = {
 				Box(
-					modifier = Modifier.fillMaxHeight(),
+					modifier = Modifier,
 					contentAlignment = Alignment.Center
 				) {
 					Text(

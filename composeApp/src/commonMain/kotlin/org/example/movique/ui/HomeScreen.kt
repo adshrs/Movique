@@ -457,9 +457,7 @@ fun HomeScreen(
 				),
 			title = {
 				Box(
-					modifier = Modifier
-						.fillMaxHeight(),
-//						.windowInsetsPadding(WindowInsets.statusBars.only(WindowInsetsSides.Top)),
+					modifier = Modifier,
 					contentAlignment = Alignment.Center
 				) {
 					Text(

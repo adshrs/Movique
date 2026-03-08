@@ -83,8 +83,7 @@ fun ProfileScreen(navController: NavHostController, innerPadding: PaddingValues)
 				),
 			title = {
 				Box(
-					modifier = Modifier
-						.fillMaxHeight(),
+					modifier = Modifier,
 					contentAlignment = Alignment.Center
 				) {
 					Text(

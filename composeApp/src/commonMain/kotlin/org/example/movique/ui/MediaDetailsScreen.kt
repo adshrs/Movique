@@ -216,8 +216,13 @@ fun MediaDetailsScreen(
 						Column(
 							modifier = Modifier.fillMaxWidth()
 						) {
-							Spacer(modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues()))
-							Spacer(modifier = Modifier.padding(top = 104.dp))
+//							Spacer(modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues()))
+//							Spacer(modifier = Modifier.padding(top = 104.dp))
+							Box(
+								modifier = Modifier
+									.fillMaxWidth()
+									.aspectRatio(16f / 6f)
+							)
 							// Main Info (including Poster, Tagline & Overview)
 							MediaMainInfoSection(
 								modifier = Modifier,
@@ -387,7 +392,7 @@ fun MediaDetailsScreen(
 						),
 					title = {
 						Box(
-							modifier = Modifier.fillMaxHeight(),
+							modifier = Modifier,
 							contentAlignment = Alignment.Center
 						) {
 							Text(

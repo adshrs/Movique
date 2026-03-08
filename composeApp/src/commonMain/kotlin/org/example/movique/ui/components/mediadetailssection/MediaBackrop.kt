@@ -2,6 +2,7 @@ package org.example.movique.ui.components.mediadetailssection
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,5 +53,30 @@ fun MediaBackdrop(
 			modifier = Modifier.fillMaxSize(),
 			contentScale = ContentScale.Crop,
 		)
+		
+		// Backdrop gradient overlay
+		Column(modifier = Modifier.matchParentSize()) {
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.aspectRatio(16f / 9f)
+					.background(
+						smoothCinematicVerticalGradientBrush(
+							baseColor = MaterialTheme.colorScheme.background,
+							topAlpha = 0.2f,
+							midAlpha = 0.1f,
+							bottomAlpha = 1f,
+							midPosition = 0.35f,
+							steps = 500
+						)
+					)
+			)
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.weight(1f)
+					.background(MaterialTheme.colorScheme.background)
+			)
+		}
 	}
 }

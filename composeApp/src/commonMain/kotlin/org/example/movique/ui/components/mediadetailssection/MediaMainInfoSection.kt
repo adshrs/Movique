@@ -66,6 +66,7 @@ import org.example.movique.theme.extraColors
 import org.example.movique.theme.titleRegular
 import org.example.movique.ui.components.badge.MediaTypeBadge
 import org.example.movique.ui.components.chip.GenreChip
+import org.example.movique.ui.components.divider.DottedDivider
 import org.example.movique.util.tools.Constants.NA
 import org.example.movique.util.tools.toHourMinuteFormat
 import org.example.movique.util.tools.toSeasonText
@@ -443,7 +444,7 @@ fun MediaMainInfoSection(
 						label = "arrowRotation"
 					)
 
-					HorizontalDivider(
+					DottedDivider(
 						modifier = Modifier
 							.weight(1f)
 							.clickable(
@@ -451,8 +452,11 @@ fun MediaMainInfoSection(
 								interactionSource = remember { MutableInteractionSource() },
 								onClick = { isOverviewExpanded = !isOverviewExpanded }
 							),
-						thickness = 0.5.dp
+						thickness = 1.dp,
+						dashLength = 4f,     // smaller value → more dot-like
+						gapLength  = 20f      // adjust gap for desired look
 					)
+
 					OutlinedButton(
 						modifier = Modifier.height(24.dp),
 						onClick = { isOverviewExpanded = !isOverviewExpanded },
@@ -485,7 +489,9 @@ fun MediaMainInfoSection(
 								)
 						)
 					}
-					HorizontalDivider(
+
+
+					DottedDivider(
 						modifier = Modifier
 							.weight(1f)
 							.clickable(
@@ -493,7 +499,9 @@ fun MediaMainInfoSection(
 								interactionSource = remember { MutableInteractionSource() },
 								onClick = { isOverviewExpanded = !isOverviewExpanded }
 							),
-						thickness = 0.5.dp
+						thickness = 1.dp,
+						dashLength = 4f,
+						gapLength  = 20f
 					)
 				}
 			}

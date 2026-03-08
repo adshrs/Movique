@@ -280,13 +280,10 @@ fun SearchScreen(navController: NavHostController, innerPadding: PaddingValues) 
 				),
 			title = {
 				Box(
-					modifier = Modifier
-						.fillMaxHeight()
-						.wrapContentWidth(),
+					modifier = Modifier.padding(end = 16.dp).padding(top = 4.dp),
 					contentAlignment = Alignment.Center
 				) {
 					CustomSearchBar(
-						modifier = Modifier.padding(horizontal = 4.dp),
 						query = query,
 						onQueryChange = { query = it },
 						onSearch = { searchViewModel.fetchMultiSearchResults(it) },

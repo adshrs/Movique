@@ -3,6 +3,8 @@ package org.example.movique.ui.components.mediadetailssection.multipletabssectio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.TabRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +34,7 @@ fun MultipleTabsSection(
 	var selectedTabIndex by remember { mutableStateOf(0) }
 
 	// Selectable Tabs
-	TabRow(
+	PrimaryTabRow(
 		modifier = modifier,
 		selectedTabIndex = selectedTabIndex,
 		containerColor = Color.Transparent,

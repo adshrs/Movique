@@ -83,9 +83,7 @@ fun FavoritesScreen(navController: NavHostController, innerPadding: PaddingValue
 				),
 			title = {
 				Box(
-					modifier = Modifier
-						.fillMaxHeight()
-						.wrapContentWidth(),
+					modifier = Modifier,
 					contentAlignment = Alignment.Center
 				) {
 					Text(
