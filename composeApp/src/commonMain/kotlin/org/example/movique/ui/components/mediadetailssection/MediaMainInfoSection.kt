@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +65,7 @@ import org.example.movique.data.models.mediadetails.MovieDetailsResponseModel
 import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.theme.extraColors
 import org.example.movique.theme.titleRegular
+import org.example.movique.ui.components.badge.MediaStatusBadge
 import org.example.movique.ui.components.badge.MediaTypeBadge
 import org.example.movique.ui.components.chip.GenreChip
 import org.example.movique.ui.components.divider.DottedDivider
@@ -116,26 +118,6 @@ fun MediaMainInfoSection(
 					mediaType = mediaType,
 					textStyle = MaterialTheme.typography.labelLarge
 				)
-				if (!releaseDate.isNullOrEmpty()) {
-					Row(
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						Text(
-							text = "  •  ",
-							style = MaterialTheme.typography.labelLarge
-						)
-						Icon(
-							imageVector = Icons.Default.CalendarToday,
-							contentDescription = "Release Date",
-							modifier = Modifier.size(12.dp)
-						)
-						Spacer(modifier = Modifier.width(4.dp))
-						Text(
-							text = releaseDate.take(4),
-							style = MaterialTheme.typography.labelLarge,
-						)
-					}
-				}
 				runtime?.let {
 					Row(
 						verticalAlignment = Alignment.CenterVertically
@@ -153,7 +135,7 @@ fun MediaMainInfoSection(
 						Text(
 							modifier = Modifier,
 							text = when (mediaType) {
-								"movie" -> runtime.toHourMinuteFormat()
+								"movie" -> if (runtime == 0) NA else runtime.toHourMinuteFormat()
 								"tv" -> runtime.toSeasonText()
 								else -> NA
 							},
@@ -243,6 +225,17 @@ fun MediaMainInfoSection(
 							},
 							modifier = Modifier.fillMaxSize(),
 							contentScale = ContentScale.Crop,
+						)
+						MediaStatusBadge(
+							mediaType = mediaType,
+							status = when (mediaType) {
+								"movie" -> movie?.status ?: NA
+								"tv" -> tvSeries?.status ?: NA
+								else -> NA
+							},
+							modifier = Modifier
+								.align(Alignment.TopCenter)
+								.padding(6.dp)
 						)
 					}
 				}
@@ -396,7 +389,7 @@ fun MediaMainInfoSection(
 
 			var isOverviewOverflowing by remember { mutableStateOf(false) }
 			var wasOverviewOverflowing by remember { mutableStateOf(false) }
-			var isOverviewExpanded by remember { mutableStateOf(false) }
+			var isOverviewExpanded by rememberSaveable { mutableStateOf(false) }
 
 			if (!tagline.isNullOrBlank()) {
 				Text(

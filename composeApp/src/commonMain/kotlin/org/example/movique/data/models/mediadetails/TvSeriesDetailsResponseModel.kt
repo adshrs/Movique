@@ -4,6 +4,11 @@ package org.example.movique.data.models.mediadetails
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.example.movique.data.models.mediadetails.common.Credits
+import org.example.movique.data.models.mediadetails.common.Genre
+import org.example.movique.data.models.mediadetails.common.PagedMediaList
+import org.example.movique.data.models.mediadetails.common.ProductionCompany
+import org.example.movique.data.models.mediadetails.common.SpokenLanguage
+import org.example.movique.data.models.mediadetails.common.Videos
 
 @Serializable
 data class TvSeriesDetailsResponseModel(
@@ -72,7 +77,11 @@ data class TvSeriesDetailsResponseModel(
     @SerialName("vote_count")
     val voteCount: Int? = 0,
     @SerialName("credits")
-    val credits: Credits? = Credits()
+    val credits: Credits? = Credits(),
+    @SerialName("videos")
+    val videos: Videos? = Videos(),
+    @SerialName("similar")
+    val similar: PagedMediaList? = PagedMediaList(),
 ) {
     @Serializable
     data class CreatedBy(
@@ -86,14 +95,6 @@ data class TvSeriesDetailsResponseModel(
         val gender: Int? = 0,
         @SerialName("profile_path")
         val profilePath: String? = ""
-    )
-
-    @Serializable
-    data class Genre(
-        @SerialName("id")
-        val id: Int? = 0,
-        @SerialName("name")
-        val name: String? = ""
     )
 
     @Serializable
@@ -137,18 +138,6 @@ data class TvSeriesDetailsResponseModel(
     )
 
     @Serializable
-    data class ProductionCompany(
-        @SerialName("id")
-        val id: Int? = 0,
-        @SerialName("logo_path")
-        val logoPath: String? = "",
-        @SerialName("name")
-        val name: String? = "",
-        @SerialName("origin_country")
-        val originCountry: String? = ""
-    )
-
-    @Serializable
     data class ProductionCountry(
         @SerialName("iso_3166_1")
         val iso31661: String? = "",
@@ -174,15 +163,5 @@ data class TvSeriesDetailsResponseModel(
         val seasonNumber: Int? = 0,
         @SerialName("vote_average")
         val voteAverage: Double? = 0.0
-    )
-
-    @Serializable
-    data class SpokenLanguage(
-        @SerialName("english_name")
-        val englishName: String? = "",
-        @SerialName("iso_639_1")
-        val iso6391: String? = "",
-        @SerialName("name")
-        val name: String? = ""
     )
 }

@@ -14,6 +14,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -91,6 +92,7 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Precision
+import io.ktor.http.LinkHeader.Parameters.Media
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -99,9 +101,11 @@ import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.theme.titleRegular
 import org.example.movique.ui.components.mediadetailssection.MediaBackdrop
 import org.example.movique.ui.components.mediadetailssection.MediaMainInfoSection
+import org.example.movique.ui.components.mediadetailssection.SimilarMediaSection
 import org.example.movique.ui.components.mediadetailssection.multipletabssection.MultipleTabsSection
 import org.example.movique.ui.components.tab.NoRippleTab
 import org.example.movique.util.Result
+import org.example.movique.util.tools.Constants.NA
 import org.example.movique.util.tools.smoothCinematicVerticalGradientBrush
 import org.example.movique.viewmodel.MediaDetailsViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -221,7 +225,7 @@ fun MediaDetailsScreen(
 							Box(
 								modifier = Modifier
 									.fillMaxWidth()
-									.aspectRatio(16f / 6f)
+									.aspectRatio(16f / 7f)
 							)
 							// Main Info (including Poster, Tagline & Overview)
 							MediaMainInfoSection(
@@ -236,6 +240,17 @@ fun MediaDetailsScreen(
 
 							MultipleTabsSection(
 								modifier = Modifier.fillMaxWidth(),
+								mediaType = mediaType,
+								movie = movie,
+								tvSeries = tvSeries
+							)
+
+							Spacer(modifier = Modifier.height(16.dp))
+
+							SimilarMediaSection(
+								modifier = Modifier.fillMaxWidth(),
+								navController = navController,
+								isLoading = isLoading,
 								mediaType = mediaType,
 								movie = movie,
 								tvSeries = tvSeries
@@ -396,6 +411,12 @@ fun MediaDetailsScreen(
 							contentAlignment = Alignment.Center
 						) {
 							Text(
+								modifier = Modifier
+									.fillMaxWidth()
+									.basicMarquee(
+										iterations = Int.MAX_VALUE,
+										velocity = 50.dp
+									),
 								text = when (mediaType) {
 									"movie" -> movie?.title ?: "Movie Title"
 									"tv" -> tvSeries?.name ?: "Tv Series Title"
@@ -403,8 +424,7 @@ fun MediaDetailsScreen(
 								},
 								style = MaterialTheme.typography.titleRegular,
 								color = MaterialTheme.colorScheme.onSurface,
-								maxLines = 1,
-								overflow = TextOverflow.Ellipsis
+								maxLines = 1
 							)
 						}
 					},

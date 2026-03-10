@@ -13,3 +13,7 @@ fun Int.toHourMinuteFormat(): String {
 fun Int.toSeasonText(): String {
 	return if (this == 1) "$this Season" else "$this Seasons"
 }
+
+fun Int.toEpisodeText(): String {
+	return if (this == 1) "$this Episode" else "$this Episodes"
+}

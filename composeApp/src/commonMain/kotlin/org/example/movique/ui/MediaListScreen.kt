@@ -162,7 +162,7 @@ fun MediaListScreen(
 					Spacer(modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues()))
 				}
 				item(span = { GridItemSpan(maxLineSpan) }) {
-					Spacer(modifier = Modifier.height(topBarHeight + 16.dp))
+					Spacer(modifier = Modifier.height(topBarHeight + 4.dp))
 				}
 
 				itemsIndexed(mediaItems) { index, item ->

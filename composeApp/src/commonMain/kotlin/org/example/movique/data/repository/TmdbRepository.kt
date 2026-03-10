@@ -12,12 +12,18 @@ import org.example.movique.util.Result
 class TmdbRepository(
 	private val client: TmdbClient
 ) {
-	suspend fun getTvSeriesDetails(id: Int): Result<TvSeriesDetailsResponseModel, NetworkError> {
-		return client.getTvSeriesDetails(id)
+	suspend fun getTvSeriesDetails(
+		id: Int,
+		append: String = "credits,videos,similar"
+	): Result<TvSeriesDetailsResponseModel, NetworkError> {
+		return client.getTvSeriesDetails(id, append)
 	}
 
-	suspend fun getMovieDetails(id: Int): Result<MovieDetailsResponseModel, NetworkError> {
-		return client.getMovieDetails(id)
+	suspend fun getMovieDetails(
+		id: Int,
+		append: String = "credits,videos,similar"
+	): Result<MovieDetailsResponseModel, NetworkError> {
+		return client.getMovieDetails(id, append)
 	}
 
 	suspend fun multiSearch(query: String, page: Int = 1): Result<MultiSearchResponseModel, NetworkError> {

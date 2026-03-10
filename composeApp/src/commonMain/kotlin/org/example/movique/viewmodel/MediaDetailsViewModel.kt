@@ -36,7 +36,7 @@ class MediaDetailsViewModel(
 		viewModelScope.launch {
 			_isLoading.value = true
 			_getTvSeriesDetails.value = null // clear old data first
-			val result = tmdbRepository.getTvSeriesDetails(id)
+			val result = tmdbRepository.getTvSeriesDetails(id, "credits,videos,similar")
 			_getTvSeriesDetails.value = result
 			_isLoading.value = false
 		}
@@ -46,7 +46,7 @@ class MediaDetailsViewModel(
 		viewModelScope.launch {
 			_isLoading.value = true
 			_getMovieDetails.value = null // clear old data first
-			val result = tmdbRepository.getMovieDetails(id)
+			val result = tmdbRepository.getMovieDetails(id, "credits,videos,similar")
 			_getMovieDetails.value = result
 			_isLoading.value = false
 		}

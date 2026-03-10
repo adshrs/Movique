@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -32,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +64,7 @@ fun MediaCrewSection(
 	}
 
 	val batchSize = 6
-	var visibleCount by remember { mutableStateOf(batchSize) }
+	var visibleCount by rememberSaveable { mutableStateOf(batchSize) }
 
 	if (crewList.isNotEmpty()) {
 		Column(modifier = modifier.fillMaxWidth().animateContentSize()) {
@@ -94,6 +96,7 @@ fun MediaCrewSection(
 								containerColor = MaterialTheme.colorScheme.surfaceContainer,
 								contentColor = MaterialTheme.colorScheme.onSurface
 							),
+							shape = CircleShape,
 							border = BorderStroke(
 								1.dp,
 								MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
@@ -148,81 +151,6 @@ fun MediaCrewSection(
 				}
 			}
 		}
-		// Show controls at bottom
-		if (crewList.size > batchSize) {
-			Row(
-				modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-				verticalAlignment = Alignment.CenterVertically
-			) {
-				HorizontalDivider(
-					modifier = Modifier
-						.weight(1f),
-					thickness = 0.5.dp
-				)
-				// Collapse Button
-				if (visibleCount > batchSize) {
-					OutlinedButton(
-						modifier = Modifier.height(24.dp),
-						onClick = { visibleCount = batchSize },
-						contentPadding = PaddingValues(
-							top = 0.dp,
-							bottom = 0.dp,
-							start = 6.dp,
-							end = 6.dp
-						),
-						colors = ButtonDefaults.outlinedButtonColors(
-							contentColor = MaterialTheme.colorScheme.primary
-						),
-						border = BorderStroke(0.5.dp, DividerDefaults.color)
-					) {
-						Icon(
-							imageVector = Icons.Default.KeyboardArrowUp,
-							contentDescription = "Collapse",
-							modifier = Modifier.size(20.dp)
-						)
-					}
-					HorizontalDivider(
-						modifier = Modifier
-							.width(12.dp),
-						thickness = 0.5.dp
-					)
-				}
-				// Show More Button
-				if (visibleCount < crewList.size) {
-					OutlinedButton(
-						modifier = Modifier.height(24.dp),
-						onClick = {
-							visibleCount = (visibleCount + batchSize).coerceAtMost(crewList.size)
-						},
-						contentPadding = PaddingValues(
-							top = 0.dp,
-							bottom = 0.dp,
-							start = 12.dp,
-							end = 6.dp
-						),
-						colors = ButtonDefaults.outlinedButtonColors(
-							contentColor = MaterialTheme.colorScheme.primary
-						),
-						border = BorderStroke(0.5.dp, DividerDefaults.color)
-					) {
-						Text(
-							text = "More",
-							style = MaterialTheme.typography.labelMedium,
-						)
-						Icon(
-							imageVector = Icons.Default.KeyboardArrowDown,
-							contentDescription = "More",
-							modifier = Modifier.size(20.dp)
-						)
-					}
-				}
-				HorizontalDivider(
-					modifier = Modifier
-						.weight(1f),
-					thickness = 0.5.dp
-				)
-			}
-		}
 	} else {
 		Box(
 			modifier = modifier
@@ -237,5 +165,81 @@ fun MediaCrewSection(
 				textAlign = TextAlign.Center
 			)
 		}
+	}
+	// Divider and bottom controls
+	Row(
+		modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		HorizontalDivider(
+			modifier = Modifier
+				.weight(1f),
+			thickness = 0.5.dp
+		)
+		// Show controls at bottom
+		if (crewList.size > batchSize) {
+			// Collapse Button
+			if (visibleCount > batchSize) {
+				OutlinedButton(
+					modifier = Modifier.height(24.dp),
+					onClick = { visibleCount = batchSize },
+					contentPadding = PaddingValues(
+						top = 0.dp,
+						bottom = 0.dp,
+						start = 6.dp,
+						end = 6.dp
+					),
+					colors = ButtonDefaults.outlinedButtonColors(
+						contentColor = MaterialTheme.colorScheme.primary
+					),
+					border = BorderStroke(0.5.dp, DividerDefaults.color)
+				) {
+					Icon(
+						imageVector = Icons.Default.KeyboardArrowUp,
+						contentDescription = "Collapse",
+						modifier = Modifier.size(20.dp)
+					)
+				}
+				HorizontalDivider(
+					modifier = Modifier
+						.width(12.dp),
+					thickness = 0.5.dp
+				)
+			}
+			// Show More Button
+			if (visibleCount < crewList.size) {
+				OutlinedButton(
+					modifier = Modifier.height(24.dp),
+					onClick = {
+						visibleCount = (visibleCount + batchSize).coerceAtMost(crewList.size)
+					},
+					contentPadding = PaddingValues(
+						top = 0.dp,
+						bottom = 0.dp,
+						start = 12.dp,
+						end = 6.dp
+					),
+					colors = ButtonDefaults.outlinedButtonColors(
+						contentColor = MaterialTheme.colorScheme.primary
+					),
+					border = BorderStroke(0.5.dp, DividerDefaults.color)
+				) {
+					Text(
+						text = "More",
+						style = MaterialTheme.typography.labelMedium,
+					)
+					Icon(
+						imageVector = Icons.Default.KeyboardArrowDown,
+						contentDescription = "More",
+						modifier = Modifier.size(20.dp)
+					)
+				}
+			}
+		}
+		HorizontalDivider(
+			modifier = Modifier
+				.weight(1f),
+			thickness = 0.5.dp
+		)
 	}
 }

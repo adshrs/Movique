@@ -22,11 +22,14 @@ class TmdbClient(
 	private val apiKey = getTmdbApiKey()
 	private val baseUrl = "https://api.themoviedb.org/3/"
 
-	suspend fun getTvSeriesDetails(id: Int): Result<TvSeriesDetailsResponseModel, NetworkError> {
+	suspend fun getTvSeriesDetails(
+		id: Int,
+		append: String = "credits,videos,similar"
+	): Result<TvSeriesDetailsResponseModel, NetworkError> {
 		val response = try {
 			httpClient.get("${baseUrl}tv/$id") {
 				parameter("api_key", apiKey)
-				parameter("append_to_response", "credits")
+				parameter("append_to_response", append)
 				parameter("language", "en-US")
 			}
 		} catch (e: UnresolvedAddressException) {
@@ -49,11 +52,14 @@ class TmdbClient(
 		}
 	}
 
-	suspend fun getMovieDetails(id: Int): Result<MovieDetailsResponseModel, NetworkError> {
+	suspend fun getMovieDetails(
+		id: Int,
+		append: String = "credits,videos,similar"
+	): Result<MovieDetailsResponseModel, NetworkError> {
 		val response = try {
 			httpClient.get("${baseUrl}movie/$id") {
 				parameter("api_key", apiKey)
-				parameter("append_to_response", "credits")
+				parameter("append_to_response", append)
 				parameter("language", "en-US")
 			}
 		} catch (e: UnresolvedAddressException) {
