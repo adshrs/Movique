@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -102,7 +103,7 @@ fun FavoritesScreen(navController: NavHostController, innerPadding: PaddingValue
 				) {
 					IconButton(onClick = { }) {
 						Icon(
-							imageVector = Icons.Default.Favorite,
+							imageVector = Icons.Rounded.Favorite,
 							contentDescription = "Favorites",
 							tint = MaterialTheme.colorScheme.onSurface
 						)

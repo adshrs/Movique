@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -101,7 +103,7 @@ fun ProfileScreen(navController: NavHostController, innerPadding: PaddingValues)
 				) {
 					IconButton(onClick = { }) {
 						Icon(
-							imageVector = Icons.Default.Person,
+							imageVector = Icons.Rounded.Person,
 							contentDescription = "Profile",
 							tint = MaterialTheme.colorScheme.onSurface
 						)
@@ -116,7 +118,7 @@ fun ProfileScreen(navController: NavHostController, innerPadding: PaddingValues)
 				) {
 					IconButton(onClick = { /* TODO: Open profile settings */ }) {
 						Icon(
-							imageVector = Icons.Default.MoreVert,
+							imageVector = Icons.Rounded.MoreVert,
 							contentDescription = "Settings",
 							tint = MaterialTheme.colorScheme.onSurface
 						)

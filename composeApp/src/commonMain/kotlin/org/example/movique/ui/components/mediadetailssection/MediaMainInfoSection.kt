@@ -15,31 +15,46 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material.icons.rounded.ChevronLeft
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextFieldDefaults.contentPadding
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +63,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInWindow
@@ -55,12 +72,19 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import chaintech.videoplayer.host.MediaPlayerHost
+import chaintech.videoplayer.model.VideoPlayerConfig
+import chaintech.videoplayer.ui.youtube.YouTubePlayerComposable
+import chaintech.videoplayer.util.ComposeResourceDrawable
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Precision
 import io.ktor.websocket.Frame.Companion.byType
+import movique.composeapp.generated.resources.Res
 import org.example.movique.data.models.mediadetails.MovieDetailsResponseModel
 import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.theme.extraColors
@@ -80,7 +104,8 @@ fun MediaMainInfoSection(
 	mediaType: String,
 	movie: MovieDetailsResponseModel?,
 	tvSeries: TvSeriesDetailsResponseModel?,
-	retrieveTitleTopPx: (Float) -> Unit
+	retrieveTitleTopPx: (Float) -> Unit,
+	onTrailerClick: () -> Unit
 ) {
 	Column(
 		modifier = modifier
@@ -243,7 +268,7 @@ fun MediaMainInfoSection(
 				Spacer(modifier = Modifier.height(12.dp))
 
 				Button(
-					onClick = { },
+					onClick = { onTrailerClick() },
 					modifier = Modifier.width(112.dp).height(28.dp),
 					contentPadding = PaddingValues(0.dp),
 					colors = ButtonDefaults.buttonColors(
@@ -310,8 +335,7 @@ fun MediaMainInfoSection(
 								?.filter { it?.job == "Director" || it?.job == "Series Director" }
 								?.mapNotNull { it?.name }
 								?.isNotEmpty() == true
-						)
-						{
+						) {
 							"DIRECTED BY"
 						} else {
 							""
@@ -447,17 +471,22 @@ fun MediaMainInfoSection(
 							),
 						thickness = 1.dp,
 						dashLength = 4f,     // smaller value → more dot-like
-						gapLength  = 20f      // adjust gap for desired look
+						gapLength = 20f      // adjust gap for desired look
 					)
 
 					OutlinedButton(
 						modifier = Modifier.height(24.dp),
 						onClick = { isOverviewExpanded = !isOverviewExpanded },
-						contentPadding = PaddingValues(top = 0.dp, bottom = 0.dp, start = 12.dp, end = 6.dp),
+						contentPadding = PaddingValues(
+							top = 0.dp,
+							bottom = 0.dp,
+							start = 12.dp,
+							end = 6.dp
+						),
 						colors = ButtonDefaults.outlinedButtonColors(
 							contentColor = MaterialTheme.colorScheme.primary
 						),
-						border = BorderStroke(0.5.dp,DividerDefaults.color)
+						border = BorderStroke(0.5.dp, DividerDefaults.color)
 					) {
 						Text(
 							text = if (!isOverviewExpanded) "See more" else "See less",
@@ -470,7 +499,7 @@ fun MediaMainInfoSection(
 								)
 						)
 						Icon(
-							imageVector = Icons.Default.KeyboardArrowDown,
+							imageVector = Icons.Rounded.KeyboardArrowDown,
 							contentDescription = if (isOverviewExpanded) "See less" else "See more",
 							modifier = Modifier
 								.size(20.dp)
@@ -494,10 +523,89 @@ fun MediaMainInfoSection(
 							),
 						thickness = 1.dp,
 						dashLength = 4f,
-						gapLength  = 20f
+						gapLength = 20f
 					)
 				}
 			}
+		}
+	}
+}
+
+@Composable
+fun TrailerPlayer(
+	youtubeKey: String?,
+	onDismissRequest: () -> Unit,
+	modifier: Modifier = Modifier
+) {
+	val embedUrl = "https://www.youtube.com/embed/$youtubeKey?autoplay=1&rel=0"
+
+	val playerHost = remember { MediaPlayerHost(mediaUrl = embedUrl) }
+
+	if (youtubeKey.isNullOrBlank()) {
+		AlertDialog(
+			onDismissRequest = onDismissRequest,
+			title = { Text("No Trailer Available") },
+			text = { Text("Sorry, we couldn't find a trailer for this title.") },
+			confirmButton = {
+				TextButton(onClick = onDismissRequest) {
+					Text("Close")
+				}
+			}
+		)
+		return
+	}
+
+	Box(
+		modifier = Modifier
+			.fillMaxSize()
+	) {
+		YouTubePlayerComposable(
+			modifier = Modifier
+				.align(Alignment.Center)
+				.fillMaxSize(),
+			playerHost = playerHost,
+			playerConfig = VideoPlayerConfig(
+				enableFullEdgeToEdge = true,
+				isFullScreenEnabled = true,
+				isPauseResumeEnabled = true,
+				isSeekBarVisible = true,
+				isDurationVisible = true,
+				seekBarThumbColor = Color.Red,
+				seekBarActiveTrackColor = Color.Red,
+				seekBarInactiveTrackColor = Color.White,
+				durationTextColor = Color.White,
+				seekBarBottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+				pauseResumeIconSize = 40.dp,
+				isAutoHideControlEnabled = true,
+				controlHideIntervalSeconds = 5,
+				isFastForwardBackwardEnabled = true,
+				isSpeedControlEnabled = false,
+				isMuteControlEnabled = false,
+				isScreenLockEnabled = false
+			)
+		)
+
+		// Close button in top-right corner
+		FilledTonalButton(
+			onClick = onDismissRequest,
+			modifier = Modifier
+				.align(Alignment.TopStart)
+				.padding(WindowInsets.statusBars.asPaddingValues())
+				.padding(16.dp)
+				.height(28.dp),
+			colors = ButtonDefaults.filledTonalButtonColors(
+				containerColor = MaterialTheme.colorScheme.surface.copy(0.6f),
+				contentColor = MaterialTheme.colorScheme.onSurface
+			),
+			contentPadding = PaddingValues(6.dp, 0.dp)
+		) {
+			Icon(
+				imageVector = Icons.Rounded.ChevronLeft,
+				contentDescription = "Close",
+				modifier = Modifier.size(20.dp)
+			)
+			Spacer(modifier = Modifier.width(2.dp))
+			Text("Exit Trailer", modifier = Modifier.padding(end = 6.dp))
 		}
 	}
 }

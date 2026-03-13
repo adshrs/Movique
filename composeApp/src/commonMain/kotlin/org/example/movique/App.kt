@@ -34,6 +34,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -48,6 +49,17 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.WatchLater
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.WatchLater
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Button
@@ -224,10 +236,10 @@ private fun MoviqueAppContent(
 									) {
 										Icon(
 											imageVector = when (screen) {
-												HomeScreen -> if (isSelected) Icons.Filled.Home else Icons.Outlined.Home
-												SearchScreen -> if (isSelected) Icons.Filled.Search else Icons.Outlined.Search
-												FavoritesScreen -> if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
-												ProfileScreen -> if (isSelected) Icons.Filled.Person else Icons.Outlined.Person
+												HomeScreen -> if (isSelected) Icons.Rounded.Home else Icons.Outlined.Home
+												SearchScreen -> if (isSelected) Icons.Rounded.Search else Icons.Rounded.Search
+												FavoritesScreen -> if (isSelected) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder
+												ProfileScreen -> if (isSelected) Icons.Rounded.Person else Icons.Outlined.Person
 												else -> Icons.Default.Info // Fallback (not used)
 											},
 											contentDescription = label,
@@ -272,7 +284,7 @@ private fun MoviqueModalDrawerSheet(
 			) {
 				IconButton(onClick = { scope.launch { drawerState.close() } }) {
 					Icon(
-						imageVector = Icons.Outlined.Menu,
+						imageVector = Icons.Rounded.Menu,
 						contentDescription = "Menu",
 						tint = MaterialTheme.colorScheme.onSurface
 					)
@@ -295,7 +307,7 @@ private fun MoviqueModalDrawerSheet(
 				icon = {
 					Icon(
 						modifier = Modifier.padding(end = 8.dp).size(20.dp),
-						imageVector = Icons.Outlined.Movie,
+						imageVector = Icons.Rounded.Movie,
 						contentDescription = "Browse Movies"
 					)
 				},
@@ -313,7 +325,7 @@ private fun MoviqueModalDrawerSheet(
 				icon = {
 					Icon(
 						modifier = Modifier.padding(end = 8.dp).size(20.dp),
-						imageVector = Icons.Outlined.Visibility,
+						imageVector = Icons.Rounded.Visibility,
 						contentDescription = "Watched"
 					)
 				},
@@ -330,7 +342,7 @@ private fun MoviqueModalDrawerSheet(
 				icon = {
 					Icon(
 						modifier = Modifier.padding(end = 8.dp).size(20.dp),
-						imageVector = Icons.Outlined.WatchLater,
+						imageVector = Icons.Rounded.WatchLater,
 						contentDescription = "Watchlist"
 					)
 				},
@@ -347,7 +359,7 @@ private fun MoviqueModalDrawerSheet(
 				icon = {
 					Icon(
 						modifier = Modifier.padding(end = 8.dp).size(20.dp),
-						imageVector = Icons.Outlined.FavoriteBorder,
+						imageVector = Icons.Rounded.Favorite,
 						contentDescription = "Favorites"
 					)
 				},
@@ -373,7 +385,7 @@ private fun MoviqueModalDrawerSheet(
 				icon = {
 					Icon(
 						modifier = Modifier.padding(end = 8.dp).size(20.dp),
-						imageVector = Icons.Outlined.Shuffle,
+						imageVector = Icons.Rounded.Shuffle,
 						contentDescription = "Random Movie Generator"
 					)
 				},
@@ -403,7 +415,7 @@ private fun MoviqueModalDrawerSheet(
 				icon = {
 					Icon(
 						modifier = Modifier.padding(end = 8.dp).size(20.dp),
-						imageVector = Icons.Outlined.Person,
+						imageVector = Icons.Rounded.Person,
 						contentDescription = "Profile"
 					)
 				},
@@ -421,7 +433,7 @@ private fun MoviqueModalDrawerSheet(
 				icon = {
 					Icon(
 						modifier = Modifier.padding(end = 8.dp).size(20.dp),
-						imageVector = Icons.Outlined.Settings,
+						imageVector = Icons.Rounded.Settings,
 						contentDescription = "Settings"
 					)
 				},

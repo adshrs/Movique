@@ -2,6 +2,13 @@ package org.example.movique.ui.components.mediadetailssection.multipletabssectio
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Cast
+import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material.icons.rounded.Groups
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Masks
+import androidx.compose.material.icons.rounded.TheaterComedy
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SecondaryTabRow
@@ -15,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import io.ktor.util.reflect.instanceOf
 import org.example.movique.data.models.mediadetails.MovieDetailsResponseModel
 import org.example.movique.data.models.mediadetails.TvSeriesDetailsResponseModel
 import org.example.movique.ui.components.tab.NoRippleTab
@@ -32,6 +40,11 @@ fun MultipleTabsSection(
 		"Crew",
 		"Details"
 	)
+	val tabIcons = listOf(
+		Icons.Rounded.TheaterComedy,
+		Icons.Rounded.Groups,
+		Icons.Rounded.Info
+	)
 	var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
 
 	// Selectable Tabs
@@ -45,6 +58,7 @@ fun MultipleTabsSection(
 	) {
 		tabs.forEachIndexed { index, title ->
 			NoRippleTab(
+				icon = tabIcons[index],
 				title = title,
 				index = index,
 				selectedTabIndex = selectedTabIndex,

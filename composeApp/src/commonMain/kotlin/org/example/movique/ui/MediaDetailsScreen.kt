@@ -40,9 +40,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.rounded.ChevronLeft
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material.icons.rounded.StarOutline
@@ -73,6 +76,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -102,6 +106,7 @@ import org.example.movique.theme.titleRegular
 import org.example.movique.ui.components.mediadetailssection.MediaBackdrop
 import org.example.movique.ui.components.mediadetailssection.MediaMainInfoSection
 import org.example.movique.ui.components.mediadetailssection.SimilarMediaSection
+import org.example.movique.ui.components.mediadetailssection.TrailerPlayer
 import org.example.movique.ui.components.mediadetailssection.multipletabssection.MultipleTabsSection
 import org.example.movique.ui.components.tab.NoRippleTab
 import org.example.movique.util.Result
@@ -133,6 +138,9 @@ fun MediaDetailsScreen(
 
 	var titleTopPx by remember { mutableStateOf(Float.POSITIVE_INFINITY) } // measured in window co-ordinates
 	var showTopBar by remember { mutableStateOf(false) }
+
+	var showTrailerPlayer by rememberSaveable { mutableStateOf(false) }
+
 
 	// Show Top Bar Logic (Show only when scroll reaches the media title text)
 	LaunchedEffect(listState) {
@@ -233,7 +241,8 @@ fun MediaDetailsScreen(
 								mediaType = mediaType,
 								movie = movie,
 								tvSeries = tvSeries,
-								retrieveTitleTopPx = { titleTopPx = it }
+								retrieveTitleTopPx = { titleTopPx = it },
+								onTrailerClick = { showTrailerPlayer = true }
 							)
 
 							Spacer(modifier = Modifier.height(16.dp))
@@ -366,9 +375,10 @@ fun MediaDetailsScreen(
 							)
 						) {
 							Icon(
-								imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+								imageVector = Icons.Rounded.ChevronLeft,
 								contentDescription = "Back",
-								tint = MaterialTheme.colorScheme.onSurface
+								tint = MaterialTheme.colorScheme.onSurface,
+								modifier = Modifier.size(30.dp)
 							)
 						}
 					}
@@ -435,9 +445,10 @@ fun MediaDetailsScreen(
 						) {
 							IconButton(onClick = { navController.popBackStack() }) {
 								Icon(
-									imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+									imageVector = Icons.Rounded.ChevronLeft,
 									contentDescription = "Back",
-									tint = MaterialTheme.colorScheme.onSurface
+									tint = MaterialTheme.colorScheme.onSurface,
+									modifier = Modifier.size(30.dp)
 								)
 							}
 						}
@@ -445,6 +456,32 @@ fun MediaDetailsScreen(
 					colors = TopAppBarDefaults.topAppBarColors(
 						containerColor = Color.Transparent
 					)
+				)
+			}
+		}
+		if (showTrailerPlayer) {
+			val trailerKey = when (mediaType) {
+				"movie" -> movie?.videos?.results
+					?.firstOrNull { it.type == "Trailer" && it.site == "YouTube" && it.official == true }
+					?.key
+					?: movie?.videos?.results?.firstOrNull { it.type == "Trailer" && it.site == "YouTube" }?.key
+
+				"tv" -> tvSeries?.videos?.results
+					?.firstOrNull { it.type == "Trailer" && it.site == "YouTube" && it.official == true }
+					?.key
+					?: tvSeries?.videos?.results?.firstOrNull { it.type == "Trailer" && it.site == "YouTube" }?.key
+
+				else -> null
+			}
+
+			AnimatedVisibility(
+				visible = showTrailerPlayer,
+				enter = fadeIn() + slideInVertically { it },
+				exit = fadeOut() + slideOutVertically { it }
+			) {
+				TrailerPlayer(
+					youtubeKey = trailerKey,
+					onDismissRequest = { showTrailerPlayer = false }
 				)
 			}
 		}

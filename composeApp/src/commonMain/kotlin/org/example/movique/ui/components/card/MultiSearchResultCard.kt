@@ -31,6 +31,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ArrowCircleRight
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ArrowCircleRight
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.Badge
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -214,7 +216,7 @@ fun MultiSearchResultCard(
 						) {
 							Icon(
 								modifier = Modifier.padding(horizontal = 14.dp).align(Alignment.Center),
-								imageVector = Icons.Outlined.ArrowCircleRight,
+								imageVector = Icons.Rounded.ChevronRight,
 								contentDescription = "Go to Details Action",
 								tint = MaterialTheme.colorScheme.primary
 							)

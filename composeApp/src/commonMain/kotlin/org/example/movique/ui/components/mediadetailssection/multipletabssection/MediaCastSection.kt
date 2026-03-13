@@ -18,8 +18,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -132,10 +136,9 @@ fun MediaCastSection(
 						}
 
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+							imageVector = Icons.Rounded.ChevronRight,
 							contentDescription = "Go to Cast Details",
 							modifier = Modifier
-								.size(16.dp)
 								.align(Alignment.CenterVertically),
 							tint = MaterialTheme.colorScheme.onSurfaceVariant
 						)
@@ -189,7 +192,7 @@ fun MediaCastSection(
 					border = BorderStroke(0.5.dp, DividerDefaults.color)
 				) {
 					Icon(
-						imageVector = Icons.Default.KeyboardArrowUp,
+						imageVector = Icons.Rounded.KeyboardArrowUp,
 						contentDescription = "Collapse",
 						modifier = Modifier.size(20.dp)
 					)
@@ -223,7 +226,7 @@ fun MediaCastSection(
 						style = MaterialTheme.typography.labelMedium,
 					)
 					Icon(
-						imageVector = Icons.Default.KeyboardArrowDown,
+						imageVector = Icons.Rounded.KeyboardArrowDown,
 						contentDescription = "More",
 						modifier = Modifier.size(20.dp)
 					)

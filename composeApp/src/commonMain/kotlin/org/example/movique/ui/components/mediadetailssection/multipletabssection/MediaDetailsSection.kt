@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -130,11 +132,10 @@ fun MediaDetailsSection(
 							)
 					) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+							imageVector = Icons.Rounded.ChevronRight,
 							contentDescription = "Go to Details",
 							modifier = Modifier
-								.align(Alignment.Center)
-								.size(14.dp),
+								.align(Alignment.Center),
 							tint = MaterialTheme.colorScheme.onSurfaceVariant
 						)
 					}
@@ -179,11 +180,10 @@ fun MediaDetailsSection(
 							)
 					) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+							imageVector = Icons.Rounded.ChevronRight,
 							contentDescription = "Go to Details",
 							modifier = Modifier
-								.align(Alignment.Center)
-								.size(14.dp),
+								.align(Alignment.Center),
 							tint = MaterialTheme.colorScheme.onSurfaceVariant
 						)
 					}

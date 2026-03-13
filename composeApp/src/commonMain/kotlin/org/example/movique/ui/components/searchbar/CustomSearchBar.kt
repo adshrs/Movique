@@ -15,6 +15,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -71,7 +73,7 @@ fun CustomSearchBar(
 	) {
 		// Search Icon
 		Icon(
-			imageVector = Icons.Default.Search,
+			imageVector = Icons.Rounded.Search,
 			contentDescription = "Search Icon",
 			modifier = Modifier
 				.padding(start = 16.dp)
@@ -117,7 +119,7 @@ fun CustomSearchBar(
 					.padding(end = 4.dp)
 			) {
 				Icon(
-					imageVector = Icons.Default.Clear,
+					imageVector = Icons.Rounded.Clear,
 					contentDescription = "Clear search",
 					tint = MaterialTheme.colorScheme.onSurfaceVariant
 				)

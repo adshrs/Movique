@@ -24,6 +24,9 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.rounded.ChevronLeft
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -246,9 +249,10 @@ fun MediaListScreen(
 				) {
 					IconButton(onClick = { navController.popBackStack() }) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							imageVector = Icons.Rounded.ChevronLeft,
 							contentDescription = "Back",
-							tint = MaterialTheme.colorScheme.onSurface
+							tint = MaterialTheme.colorScheme.onSurface,
+							modifier = Modifier.size(30.dp)
 						)
 					}
 				}

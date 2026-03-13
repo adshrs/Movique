@@ -48,6 +48,8 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ArrowCircleRight
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.CardDefaults
@@ -195,7 +197,7 @@ fun HomeScreen(
 										style = MaterialTheme.typography.labelSmall,
 									)
 									Icon(
-										imageVector = Icons.Default.ChevronRight,
+										imageVector = Icons.Rounded.ChevronRight,
 										contentDescription = "View More",
 										modifier = Modifier.size(16.dp),
 										tint = MaterialTheme.colorScheme.onSurface
@@ -289,7 +291,7 @@ fun HomeScreen(
 										style = MaterialTheme.typography.labelSmall,
 									)
 									Icon(
-										imageVector = Icons.Default.ChevronRight,
+										imageVector = Icons.Rounded.ChevronRight,
 										contentDescription = "View More",
 										modifier = Modifier.size(16.dp),
 										tint = MaterialTheme.colorScheme.onSurface
@@ -383,7 +385,7 @@ fun HomeScreen(
 										style = MaterialTheme.typography.labelSmall,
 									)
 									Icon(
-										imageVector = Icons.Default.ChevronRight,
+										imageVector = Icons.Rounded.ChevronRight,
 										contentDescription = "View More",
 										modifier = Modifier.size(16.dp),
 										tint = MaterialTheme.colorScheme.onSurface
@@ -476,7 +478,7 @@ fun HomeScreen(
 				) {
 					IconButton(onClick = { scope.launch { drawerState.open() } }) {
 						Icon(
-							imageVector = Icons.Outlined.Menu,
+							imageVector = Icons.Rounded.Menu,
 							contentDescription = "Menu",
 							tint = MaterialTheme.colorScheme.onSurface
 						)

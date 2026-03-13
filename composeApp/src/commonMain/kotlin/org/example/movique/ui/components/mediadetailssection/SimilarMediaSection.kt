@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -107,7 +108,7 @@ fun SimilarMediaSection(
 						style = MaterialTheme.typography.labelSmall,
 					)
 					Icon(
-						imageVector = Icons.Default.ChevronRight,
+						imageVector = Icons.Rounded.ChevronRight,
 						contentDescription = "View More",
 						modifier = Modifier.size(16.dp),
 						tint = MaterialTheme.colorScheme.onSurface
